@@ -92,7 +92,7 @@ def ret_from_signal(df)-> dict:
 
 
 # performance
-def perf_TMBA(ret_ts, pos_ts, auunal_factor=252):
+def perf_TMBA(ret_ts, auunal_factor=252):
 
     ret_cum = ret_ts.cumsum()
     total_return = ret_cum.values[-1]
@@ -101,7 +101,6 @@ def perf_TMBA(ret_ts, pos_ts, auunal_factor=252):
     sharpe = ret_ts.mean() / ret_ts.std() * np.sqrt(auunal_factor)
     mdd = (ret_cum - np.maximum.accumulate(ret_cum) ).min()
     ret_to_risk = total_return/np.abs(mdd)
-    #aveg_holding_period = (pf.positions.records_readable['Exit Timestamp'] - pf.positions.records_readable['Entry Timestamp']).mean()
     win_rate = 1 - ret_ts[ret_ts<0].shape[0] / ret_ts.shape[0]
 
     perf = {
