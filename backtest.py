@@ -34,7 +34,7 @@ def get_ret(ret_arr:np.ndarray, friction_cost_arr:np.ndarray, signal_arr:np.ndar
                 strategy_ret_arr[t] = ret_arr[t] * LS_adjust - friction_cost_arr[t]
                 
         elif pos:                                   # 有部位時：
-            if signal_arr[t-1] == -1:               # 前一期有出場訊號 -> 更新部位; 原持有報酬視為出場報酬 -> -摩擦成本
+            if signal_arr[t-1] == -1:               # 前一期有出場訊號 -> 更新部位; 原持有報酬視為出場報酬 -> 原報酬-摩擦成本
                 pos = False
                 strategy_ret_arr[t-1] -= friction_cost_arr[t]
 
