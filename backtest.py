@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from numba import jit
 
 # return
@@ -47,39 +48,44 @@ def get_ret(ret_arr:np.ndarray, friction_cost_arr:np.ndarray, signal_arr:np.ndar
     return result
 
 
-def ret_from_signal(df)-> dict: 
+def ret_from_signal(df:pd.DataFrame, is_long:bool=True, is_short:bool=True)-> dict: 
     """
     分別讀取多空進出場訊號來計算多空報酬
 
     Args:
         df (pd.DataFrame): 包含報酬, 多空訊號, 摩擦成本
+        is_long (bool): 是否做多
+        is_short (bool): 是否做空
 
     Returns:
         dict: 多單部位, 多單報酬, 空單部位, 空單報酬
 
     Example:
-        ret_from_signal(df)
+        ret_from_signal(df, is_short=False)
     """
 
-    # def ret from signal
     ret_arr = df['ret'].shift(-1).fillna(0).to_numpy()   # 持有到下一期才產生報酬
-    signal_long_arr = df['signal_long'].to_numpy()
-    signal_short_arr = df['signal_short'].to_numpy()
     friction_cost_arr = df['friction_cost'].to_numpy()
+    
+    T = len(ret_arr)
+    pos_long_arr = pos_short_arr = strategy_ret_long_arr = strategy_ret_short_arr = np.zeros(T) # initial pos_arr, ret_arr in case no long or no short
 
-    pos_long_arr, strategy_ret_long_arr = get_ret(
-        ret_arr = ret_arr, 
-        friction_cost_arr = friction_cost_arr, 
-        signal_arr = signal_long_arr, 
-        LS_adjust = 1,
-    ).values()
-
-    pos_short_arr, strategy_ret_short_arr = get_ret(
-        ret_arr = ret_arr, 
-        friction_cost_arr = friction_cost_arr, 
-        signal_arr = signal_short_arr, 
-        LS_adjust = -1,
-    ).values()
+    if is_long: 
+        signal_long_arr = df['signal_long'].to_numpy()
+        pos_long_arr, strategy_ret_long_arr = get_ret(
+            ret_arr = ret_arr, 
+            friction_cost_arr = friction_cost_arr, 
+            signal_arr = signal_long_arr, 
+            LS_adjust = 1,
+        ).values()
+    if is_short:
+        signal_short_arr = df['signal_short'].to_numpy()
+        pos_short_arr, strategy_ret_short_arr = get_ret(
+            ret_arr = ret_arr, 
+            friction_cost_arr = friction_cost_arr, 
+            signal_arr = signal_short_arr, 
+            LS_adjust = -1,
+        ).values()
 
     result = {
         'pos_long_arr': pos_long_arr, 
@@ -93,7 +99,6 @@ def ret_from_signal(df)-> dict:
 
 # performance
 def perf_TMBA(ret_ts, auunal_factor=252):
-
     ret_cum = ret_ts.cumsum()
     total_return = ret_cum.values[-1]
     annual_return = ret_ts.mean()*auunal_factor
@@ -101,9 +106,12 @@ def perf_TMBA(ret_ts, auunal_factor=252):
     sharpe = ret_ts.mean() / ret_ts.std() * np.sqrt(auunal_factor)
     mdd = (ret_cum - np.maximum.accumulate(ret_cum) ).min()
     ret_to_risk = total_return/np.abs(mdd)
-    win_rate = 1 - ret_ts[ret_ts<0].shape[0] / ret_ts.shape[0]
-
-    perf = {
+    win = ret_ts[ret_ts>0].shape[0]
+    loss = ret_ts[ret_ts<0].shape[0]
+    try: win_rate = win / (win + loss)  # in case no enter
+    except: win_rate = 0
+    
+    perf_dict = {
         'Total_Return': total_return,
         'Annual_Return': annual_return,
         'Annnal_Sharpe': sharpe,
@@ -113,5 +121,27 @@ def perf_TMBA(ret_ts, auunal_factor=252):
         'Win_Rate': win_rate,
         #'Total_Trades': pf.trades.count(),
     }
+    return perf_dict
 
-    return perf
+def perf_matrix(matrix_ret, auunal_factor=252):
+    matrix_ret_fill0 = matrix_ret.fillna(0)
+
+
+    total_ret = matrix_ret_fill0.cumsum().iloc[-1]
+    annual_ret = (matrix_ret_fill0.mean()*auunal_factor)
+    sharpe = ( matrix_ret_fill0.mean() / matrix_ret_fill0.std() * np.sqrt(auunal_factor) )
+    sharpe_strategy_only = ( matrix_ret.mean() / matrix_ret.std() * np.sqrt(auunal_factor) )
+    mdd = (matrix_ret_fill0.cumsum() - matrix_ret_fill0.cumsum().cummax()).min()
+    ret_to_risk = annual_ret/np.abs(mdd)
+
+    perf_dict = {
+        'Total_Ret': total_ret,
+        'Annual_ret': annual_ret,
+        'Annnal_Sharpe': sharpe,
+        'Annnal_Sharpe_strategy_only': sharpe_strategy_only,
+        'MDD': mdd,
+        'Ret_to_Risk': ret_to_risk,
+        #'Win_Rate': 
+
+    }
+    return perf_dict
