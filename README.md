@@ -1,3 +1,3 @@
-# System_Backtesting
+# Trading_System
 
-* Conduct Backtesting
+* Conduct trading system
