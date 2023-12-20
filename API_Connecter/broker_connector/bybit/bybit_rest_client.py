@@ -2,12 +2,7 @@ import time
 import sys, os
 
 sys.path.insert(1, os.path.expanduser(f'{os.path.dirname(__file__)}/../../'))
-
 from pybit.unified_trading import HTTP as _HTTP_V5
-
-# from broker_utils.bybit_v5 import HTTP as _HTTP_V5
-
-# from types_enums.env_enum import DEV
 
 class BybitRestClient:
     def __init__(self, api_key=None, api_secret=None, if_testnet=True):
