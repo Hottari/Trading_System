@@ -25,7 +25,7 @@ class BinanceLoader():
             download_spot_ohlcv('2023-1-1 12:00:00+08:00', '30m', ['BTCUSDT', 'ETHUSDT'])
 
         Mind
-        - No check if_spot in spot_li.
+        - No if_spot checking in spot_li.
         - max_limit = 1000 for spot markets
         - timezone = 'UTC'
         """
