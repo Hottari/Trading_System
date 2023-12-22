@@ -35,17 +35,24 @@ class BinanceLoader():
         if not spot_li:
             suffix = '/api/v3/exchangeInfo'
             url = self.end_point + suffix
+
             response = requests.get(url)
             exchange_info = response.json()
+            
             spot_li = [i['symbol'] for i in exchange_info['symbols'] if i['quoteAsset']=='USDT']
 
         for symbol in spot_li:
+            symbol_amount = len(spot_li)
+            print(f"downloading {spot_li.index(symbol)+1}/{symbol_amount}")
+
             df = self.fetch_spot_ohlcv(symbol, start, freq, limit)
             df['datetime'] = pd.to_datetime(df['datetime'], unit='ms').dt.tz_localize('UTC').dt.tz_convert(self.timezone)
             df = df.set_index(['datetime', 'code']).sort_index()
+
             file_name = f"{symbol}_ohlcv.pkl"
             file_path = os.path.join(save_dir, file_name)
             df.to_pickle(file_path)
+
             print(f"{symbol} has been downloaded to {file_path}")
 
 
