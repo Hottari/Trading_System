@@ -98,30 +98,43 @@ def ret_from_signal(df:pd.DataFrame, is_long:bool=True, is_short:bool=True)-> di
 
 
 # performance
-def perf_TMBA(ret_ts, auunal_factor=252):
+def perf_TMBA(ret_ts:pd.Series, auunal_factor=252):
     ret_cum = ret_ts.cumsum()
-    total_return = ret_cum.values[-1]
+    total_return = ret_cum[-1]
     annual_return = ret_ts.mean()*auunal_factor
+    profit_ts = ret_ts[ret_ts>0]
+    loss_ts = ret_ts[ret_ts<0]
+    profit = profit_ts.cumsum()[-1]
+    loss = loss_ts.cumsum()[-1]
+    win_times = profit_ts.shape[0]
+    lose_times = loss_ts.shape[0]
 
     sharpe = ret_ts.mean() / ret_ts.std() * np.sqrt(auunal_factor)
     mdd = (ret_cum - np.maximum.accumulate(ret_cum) ).min()
     ret_to_risk = total_return/np.abs(mdd)
-    win = ret_ts[ret_ts>0].shape[0]
-    loss = ret_ts[ret_ts<0].shape[0]
-    try: win_rate = win / (win + loss)  # in case no enter
+    profit_to_loss = profit/(-loss)
+
+    try: win_rate = win_times / (win_times + lose_times)  # in case no enter
     except: win_rate = 0
     
     perf_dict = {
-        'Total_Return': total_return,
-        'Annual_Return': annual_return,
+        'Total_Return(%)': total_return*100,
+        'Annual_Return(%)': annual_return*100,
         'Annnal_Sharpe': sharpe,
-        'MDD': mdd,
+        'MDD(%)': mdd*100,
         'Ret_to_Risk': ret_to_risk, 
+        'profit_to_loss': profit_to_loss,
         #'aveg_holding_period': aveg_holding_period,
         'Win_Rate': win_rate,
         #'Total_Trades': pf.trades.count(),
     }
-    return perf_dict
+
+    perf_dict_rounded = dict(zip(
+        perf_dict.keys(), 
+        np.round( list(perf_dict.values()), 2)
+        ))
+
+    return perf_dict_rounded
 
 def perf_matrix(matrix_ret, auunal_factor=252):
     matrix_ret_fill0 = matrix_ret.fillna(0)
