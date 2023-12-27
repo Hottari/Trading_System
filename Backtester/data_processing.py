@@ -23,4 +23,33 @@ def get_adj_price(df:pd.DataFrame)->pd.DataFrame:
     df['Low_adj'] = np.round(df['Low'] * df['Adj_rate'], 3)
     df['Close_adj'] = close_adj
     return df
+
+
+
+def resample_ohlcv(df, freq, ohlcv_li=['open', 'high', 'low', 'close', 'volume'], exchange=None):
+    """
+    Get resampleed ohlcv.
+
+    Args:
+        df (pd.DataFrame): dataframe with ohlcv and datetime type index.
+        freq: (str): resample frequence.
+        ohlcv_li (list): ohlcv column name list.
+        exchange (str): data source ( from which exchange )  
+
+    Returns:
+        pd.DataFrame: resampled dataframe with ohlcv only.
+
+    Example:
+        df_resampled = resample_ohlcv(df, freq, ohlcv_li=['open', 'high', 'low', 'close', 'volume'], exchange='binance)
+    """
+    if not exchange:
+        closed, label = 'right', 'right'
+    elif exchange=='binance':  
+        closed, label = 'left', 'left'
+
+    imply_li = ['first', 'max', 'min', 'last', 'sum']
+    agg_funcs = dict(zip(ohlcv_li, imply_li))
+
+    df_resampled = df.resample(freq, closed=closed, label=label).agg(agg_funcs)
+    return df_resampled
     
