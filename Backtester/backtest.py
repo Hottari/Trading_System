@@ -99,7 +99,8 @@ def ret_from_signal(df:pd.DataFrame, is_long:bool=True, is_short:bool=True)-> di
 
 # performance
 def perf_TMBA(ret_ts:pd.Series, auunal_factor=252):
-    ret_cum = ret_ts.cumsum()
+    ret_cum = ret_ts.fillna(0).cumsum()                  # in case NaN
+
     total_return = ret_cum[-1]
     annual_return = ret_ts.mean()*auunal_factor
     profit_ts = ret_ts[ret_ts>0]
