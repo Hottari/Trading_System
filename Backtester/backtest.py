@@ -7,7 +7,7 @@ class BackTest():
         pass
 
     # return
-    @jit(nopython=True)
+    #@jit(nopython=True)
     def get_ret(self, ret_arr:np.ndarray, friction_cost_arr:np.ndarray, signal_arr:np.ndarray, LS_adjust:int=1)-> dict: 
         """
         讀取進出場訊號來計算報酬 (不考慮加碼)
@@ -76,7 +76,7 @@ class BackTest():
 
         if is_long: 
             signal_long_arr = df['signal_long'].to_numpy()
-            pos_long_arr, strategy_ret_long_arr = get_ret(
+            pos_long_arr, strategy_ret_long_arr = self.get_ret(
                 ret_arr = ret_arr, 
                 friction_cost_arr = friction_cost_arr, 
                 signal_arr = signal_long_arr, 
@@ -84,7 +84,7 @@ class BackTest():
             ).values()
         if is_short:
             signal_short_arr = df['signal_short'].to_numpy()
-            pos_short_arr, strategy_ret_short_arr = get_ret(
+            pos_short_arr, strategy_ret_short_arr = self.get_ret(
                 ret_arr = ret_arr, 
                 friction_cost_arr = friction_cost_arr, 
                 signal_arr = signal_short_arr, 
@@ -102,11 +102,11 @@ class BackTest():
 
 
     # performance
-    def perf_TMBA(self, ret_ts:pd.Series, auunal_factor=252):
+    def perf_TMBA(self, ret_ts:pd.Series, annual_factor=252):
         ret_cum = ret_ts.fillna(0).cumsum()                  # in case NaN
 
         total_return = ret_cum[-1]
-        annual_return = ret_ts.mean()*auunal_factor
+        annual_return = ret_ts.mean()*annual_factor
         profit_ts = ret_ts[ret_ts>0]
         loss_ts = ret_ts[ret_ts<0]
         profit = profit_ts.cumsum()[-1]
@@ -114,7 +114,7 @@ class BackTest():
         win_times = profit_ts.shape[0]
         lose_times = loss_ts.shape[0]
 
-        sharpe = ret_ts.mean() / ret_ts.std() * np.sqrt(auunal_factor)
+        sharpe = ret_ts.mean() / ret_ts.std() * np.sqrt(annual_factor)
         mdd = (ret_cum - np.maximum.accumulate(ret_cum) ).min()
         ret_to_risk = total_return/np.abs(mdd)
         profit_to_loss = profit/(-loss)
@@ -140,26 +140,3 @@ class BackTest():
             ))
 
         return perf_dict_rounded
-
-    def perf_matrix(self, matrix_ret, auunal_factor=252):
-        matrix_ret_fill0 = matrix_ret.fillna(0)
-
-
-        total_ret = matrix_ret_fill0.cumsum().iloc[-1]
-        annual_ret = (matrix_ret_fill0.mean()*auunal_factor)
-        sharpe = ( matrix_ret_fill0.mean() / matrix_ret_fill0.std() * np.sqrt(auunal_factor) )
-        sharpe_strategy_only = ( matrix_ret.mean() / matrix_ret.std() * np.sqrt(auunal_factor) )
-        mdd = (matrix_ret_fill0.cumsum() - matrix_ret_fill0.cumsum().cummax()).min()
-        ret_to_risk = annual_ret/np.abs(mdd)
-
-        perf_dict = {
-            'Total_Ret': total_ret,
-            'Annual_ret': annual_ret,
-            'Annnal_Sharpe': sharpe,
-            'Annnal_Sharpe_strategy_only': sharpe_strategy_only,
-            'MDD': mdd,
-            'Ret_to_Risk': ret_to_risk,
-            #'Win_Rate': 
-
-        }
-        return perf_dict
