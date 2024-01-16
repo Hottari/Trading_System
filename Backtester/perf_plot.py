@@ -38,7 +38,7 @@ class PerfPlot():
 
 
 
-    def plot_interactive(self, df:pd.DataFrame, x:str, y:list, title:str='Interactive_Plot'):
+    def plot_interactive_line(self, df:pd.DataFrame, x:str, y:list, title:str='Interactive_Plot'):
         """
         plot interactive figure
 
@@ -72,3 +72,36 @@ class PerfPlot():
 
         # Print the path to the HTML file
         print(f"Interactive plot saved to: {os.path.join(os.getcwd(), html_file_path)}")
+
+
+
+    def plot_mdd(df_equity:pd.DataFrame, equity_name:str, separate_date:str=None):
+        equity = df_equity.copy()
+        fig, x = plt.subplots(figsize = (12,5))
+
+        # Equity
+        equity[equity_name].plot(
+            label = 'Equity', 
+            ax = x, 
+            c = 'gray', 
+            grid = True
+        )
+
+        # New high
+        peak_index = equity[equity[equity_name].cummax() == equity[equity_name]].index
+        plt.scatter(
+            peak_index, 
+            equity[equity_name].loc[peak_index],
+            c = '#02ff0f', 
+            label ='New High')
+        if separate_date: plt.axvline(x = pd.to_datetime(separate_date), linestyle ="--", c='blue', alpha = 0.4)
+
+        # Drawdown
+        equity['drawdown'] = equity[equity_name] - equity[equity_name].cummax()
+        plt.fill_between(equity['drawdown'].index, equity['drawdown'], 0, facecolor='r', label='Drawdown', alpha=0.5)
+        
+        plt.legend()
+        plt.ylabel(f"{equity_name}")
+        plt.xlabel('Date')
+        plt.title(f'Profit & Drawdown', fontsize=16)
+        plt.show()
