@@ -105,12 +105,12 @@ class BackTest():
     def perf_TMBA(self, ret_ts:pd.Series, annual_factor=252):
         ret_cum = ret_ts.fillna(0).cumsum()                  # in case NaN
 
-        total_return = ret_cum[-1]
+        total_return = ret_cum.values[-1]
         annual_return = ret_ts.mean()*annual_factor
         profit_ts = ret_ts[ret_ts>0]
         loss_ts = ret_ts[ret_ts<0]
-        profit = profit_ts.cumsum()[-1]
-        loss = loss_ts.cumsum()[-1]
+        profit = profit_ts.cumsum().values[-1]
+        loss = loss_ts.cumsum().values[-1]
         win_times = profit_ts.shape[0]
         lose_times = loss_ts.shape[0]
 
@@ -134,9 +134,4 @@ class BackTest():
             #'Total_Trades': pf.trades.count(),
         }
 
-        perf_dict_rounded = dict(zip(
-            perf_dict.keys(), 
-            np.round( list(perf_dict.values()), 2)
-            ))
-
-        return perf_dict_rounded
+        return perf_dict
