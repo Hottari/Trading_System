@@ -6,7 +6,7 @@ from API_Connecter.data_loader.binance import BinanceLoader
 
 def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_li):
     bl = BinanceLoader(exchange, symbol_type, timezone)
-
+    
     bl.update_ohlcv(start=start, end=end, freq=freq, symbol_li=symbol_li)
     bl.update_funding_rate(start=start, end=end, symbol_li=symbol_li)
 

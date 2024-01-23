@@ -59,9 +59,13 @@ class BinanceLoader(ExchangeData):
                 break    
             start_ts13 = data[-1][0] + 1
 
-        df = pd.DataFrame(data_li, columns=columns)[need_col].set_index(['datetime']).sort_index()
-        df.index = pd.to_datetime(df.index, unit='ms').tz_localize('UTC').tz_convert(self.timezone)
-        return df
+        # form dataframe
+        if data_li: 
+            df = pd.DataFrame(data_li, columns=columns)[need_col].set_index(['datetime']).sort_index()
+            df.index = pd.to_datetime(df.index, unit='ms').tz_localize('UTC').tz_convert(self.timezone)
+            return df
+        else: 
+            return pd.DataFrame()
 
 
     def fetch_funding_rate(
@@ -98,11 +102,15 @@ class BinanceLoader(ExchangeData):
                 break    
             start_ts13 = data[-1]['fundingTime'] + 1
 
-        df = pd.DataFrame(data_li)
-        df.columns = columns
-        df = df[need_col].set_index(['datetime']).sort_index()
-        df.index = pd.to_datetime(df.index, unit='ms').tz_localize('UTC').tz_convert(self.timezone)
-        return df
+        # form dataframe
+        if data_li: 
+            df = pd.DataFrame(data_li)
+            df.columns = columns
+            df = df[need_col].set_index(['datetime']).sort_index()
+            df.index = pd.to_datetime(df.index, unit='ms').tz_localize('UTC').tz_convert(self.timezone)
+            return df
+        else: 
+            return pd.DataFrame()
 
 
     def update_ohlcv(self, start:str, freq:str, symbol_li:list=None, end:str=None):
@@ -145,11 +153,12 @@ class BinanceLoader(ExchangeData):
 
             file_name = f"{symbol}_ohlcv.pkl"
             file_path = os.path.join(save_dir, file_name)
-            
-            # no file
-            if not os.path.isfile(file_path):
+            df_ori = pd.read_pickle(file_path) if os.path.isfile(file_path) else pd.DataFrame()
+
+            # no file or empty
+            if not os.path.isfile(file_path) or df_ori.empty:
                 message.necessary_creating(item, symbol)
-                df = self.fetch_ohlcv(
+                df_updated = self.fetch_ohlcv(
                     url = url,
                     symbol = symbol,
                     freq = freq,
@@ -158,10 +167,13 @@ class BinanceLoader(ExchangeData):
                     limit = limit,
                     columns = columns,
                 )
-                df.to_pickle(file_path)
-                message.donload_completed(item, symbol, file_path)
+                if df_updated.empty:
+                    message.empty_warning(item, symbol) 
+                else:
+                    df_updated.to_pickle(file_path)
+                    message.donload_completed(item, symbol, file_path)
 
-            # file exists
+            # file exists and not empty
             else:          
                 df_ori = pd.read_pickle(file_path)
                 start_ts13_ori = int(df_ori.index[0].timestamp()*1000)
@@ -199,8 +211,11 @@ class BinanceLoader(ExchangeData):
                     update_li.append(df_new_tail)
 
                 df_updated = pd.concat(update_li)
-                df_updated.to_pickle(file_path)
-                message.update_completed(item, symbol)
+                if df_updated.empty:
+                    message.empty_warning(item, symbol) 
+                else:
+                    df_updated.to_pickle(file_path)
+                    message.update_completed(item, symbol)
 
 
     def update_funding_rate(self, start:str, symbol_li:list=None, end:str=None):
@@ -242,11 +257,12 @@ class BinanceLoader(ExchangeData):
 
             file_name = f"{symbol}_funding_rate.pkl"
             file_path = os.path.join(save_dir, file_name)
-            
-            # no file
-            if not os.path.isfile(file_path):
+            df_ori = pd.read_pickle(file_path) if os.path.isfile(file_path) else pd.DataFrame()
+
+            # no file or empty
+            if not os.path.isfile(file_path) or df_ori.empty:
                 message.necessary_creating(item, symbol)
-                df = self.fetch_funding_rate(
+                df_updated = self.fetch_funding_rate(
                     url = url,
                     symbol = symbol,
                     start_ts13 = start_ts13,
@@ -254,10 +270,13 @@ class BinanceLoader(ExchangeData):
                     limit = limit,
                     columns = columns,
                 )
-                df.to_pickle(file_path)
-                message.donload_completed(item, symbol, file_path)
+                if df_updated.empty:
+                    message.empty_warning(item, symbol) 
+                else:
+                    df_updated.to_pickle(file_path)
+                    message.donload_completed(item, symbol, file_path)
 
-            # file exists
+            # file exists and not empty
             else:          
                 df_ori = pd.read_pickle(file_path)
                 start_ts13_ori = int(df_ori.index[0].timestamp()*1000)
@@ -293,5 +312,9 @@ class BinanceLoader(ExchangeData):
                     update_li.append(df_new_tail)
 
                 df_updated = pd.concat(update_li)
-                df_updated.to_pickle(file_path)
-                message.update_completed(item, symbol)
+
+                if df_updated.empty:
+                    message.empty_warning(item, symbol) 
+                else:
+                    df_updated.to_pickle(file_path)
+                    message.update_completed(item, symbol)
