@@ -6,6 +6,11 @@ PROJECT_ROOT = os.path.dirname(__file__)
 sys.path.insert(1, PROJECT_ROOT) 
 
 class ExchangeData:
+    """
+    binance: see https://binance-docs.github.io/apidocs/
+    bybit: see https://bybit-exchange.github.io/docs/v5/intro
+
+    """
 
     def __init__(self, exchange, symbol_type):
         self.exchange = exchange
@@ -37,7 +42,7 @@ class ExchangeData:
         return self.exchange_config[self.symbol_type]["limit"]["kline"]
     
 
-    # ==================== columns ==================== #
+    # ==================== response columns ==================== #
 
     def get_columns_kline(self):
         return self.exchange_config[self.symbol_type]["columns"]["kline"]
