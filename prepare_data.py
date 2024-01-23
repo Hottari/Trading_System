@@ -35,14 +35,23 @@ class ExchangeData:
     def get_suffix_kline(self):
         return self.exchange_config[self.symbol_type]["suffix"]["kline"]
     
+    def get_suffix_funding_rate(self):
+        return self.exchange_config[self.symbol_type]["suffix"]["funding_rate"]
+    
 
     # ==================== limit ==================== #
 
     def get_limit_kline(self):
         return self.exchange_config[self.symbol_type]["limit"]["kline"]
-    
+
+    def get_limit_funding_rate(self):
+        return self.exchange_config[self.symbol_type]["limit"]["funding_rate"]    
+
 
     # ==================== response columns ==================== #
 
     def get_columns_kline(self):
         return self.exchange_config[self.symbol_type]["columns"]["kline"]
+
+    def get_columns_funding_rate(self):
+        return self.exchange_config[self.symbol_type]["columns"]["funding_rate"]

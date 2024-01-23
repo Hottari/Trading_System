@@ -19,11 +19,13 @@
         
         "suffix": {
             "exchange_info": "/fapi/v1/exchangeInfo",
-            "kline": "/fapi/v1/klines"
+            "kline": "/fapi/v1/klines",
+            "funding_rate": "/fapi/v1/fundingRate"
         },
 
         "limit": {
-            "kline": 1500
+            "kline": 1500,
+            "funding_rate": 1000
         },
 
         "columns": {
@@ -31,7 +33,8 @@
                 "datetime", "open", "high", "low", "close", "volume", "close_time", 
                 "quote_asset_volume", "number_of_trades", "taker_buy_base_asset_volume", "taker_buy_quote_asset_volume", 
                 "ignore"
-            ]
+            ],
+            "funding_rate": ["symbol", "datetime", "funding_rate", "mark_price"]
         }
         
     },

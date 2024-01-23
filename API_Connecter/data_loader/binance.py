@@ -2,10 +2,13 @@ import pandas as pd
 import numpy as np
 import os, sys
 import requests
+import time
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
+PROJECT_ROOT = os.path.join(os.getcwd(), '..', '..')#os.path.join(os.path.dirname(__file__), '..', '..')
 sys.path.insert(1, PROJECT_ROOT) 
 from prepare_data import ExchangeData
+from message_manager import MessageManager
+message = MessageManager()
 
 class BinanceLoader(ExchangeData):
 
@@ -18,59 +21,119 @@ class BinanceLoader(ExchangeData):
         ts13 = int(pd.to_datetime(datetime).tz_localize(self.timezone).timestamp()*1000)
         return ts13
   
-    
-    def fetch_ohlcv(self, url, symbol, freq, start_ts13, limit, columns, need_col=["datetime", "open", "high", "low", "close", "volume"]):
+
+    def fetch_ohlcv(
+            self, 
+            url, 
+            symbol, 
+            freq, 
+            start_ts13,
+            limit, 
+            columns, 
+            need_col = ["datetime", "open", "high", "low", "close", "volume"],
+            end_ts13 = None,
+        ):
+
         """
         Mind
         - timezone = 'UTC'
-        - spot: https://binance-docs.github.io/apidocs/spot/en/#kline-candlestick-data
-        - usd: https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
-        - coin: https://binance-docs.github.io/apidocs/delivery/en/#kline-candlestick-data
+        - spot: see https://binance-docs.github.io/apidocs/spot/en/#kline-candlestick-data
+        - usd: see https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
+        - coin: see https://binance-docs.github.io/apidocs/delivery/en/#kline-candlestick-data
         """
-        ohlcv_list = []
+        item = 'ohlcv'
+        data_li = []
         params = {
             'symbol': symbol, 
             'interval': freq, 
             'limit':limit,
+            'endTime': end_ts13,
         }
         while True:
-            print(f"fetching {symbol} from {pd.to_datetime(start_ts13, unit='ms').tz_localize('UTC')}") # timezone of binance is UTC+0
-            params['startTime'] = start_ts13                                                            # update start_time
-            ohlcv = requests.get(url, params=params).json()
-            ohlcv_list.extend(ohlcv) 
-            if len(ohlcv) < limit:
+            message.fetching(item, symbol, start_time=pd.to_datetime(start_ts13, unit='ms').tz_localize('UTC'))
+            # timezone of binance is UTC+0
+            params['startTime'] = start_ts13  # update start_time
+            data = requests.get(url, params=params).json()
+            data_li.extend(data) 
+            if len(data) < limit:
                 break    
-            start_ts13 = ohlcv[-1][0] + 1
+            start_ts13 = data[-1][0] + 1
 
-        df = pd.DataFrame(ohlcv_list, columns=columns)[need_col].set_index(['datetime']).sort_index()
+        df = pd.DataFrame(data_li, columns=columns)[need_col].set_index(['datetime']).sort_index()
         df.index = pd.to_datetime(df.index, unit='ms').tz_localize('UTC').tz_convert(self.timezone)
         return df
-    
 
-    def download_ohlcv(self, start:str, freq:str, symbol_li:list=None,):
+
+    def fetch_funding_rate(
+            self, 
+            url, 
+            symbol, 
+            start_ts13,
+            limit, 
+            columns, 
+            need_col = ["datetime", "funding_rate"],
+            end_ts13 = None,
+        ):
+
         """
-        Download ohlcv for the given symbols.
+        Mind
+        - timezone = 'UTC'
+        - usd: see https://binance-docs.github.io/apidocs/futures/en/#get-funding-rate-history
+        - coin: see https://binance-docs.github.io/apidocs/delivery/en/#get-funding-rate-history-of-perpetual-futures
+        """
+        item = 'funding_rate'
+        data_li = []
+        params = {
+            'symbol': symbol, 
+            'limit':limit,
+            'endTime': end_ts13,
+        }
+        while True:
+            message.fetching(item, symbol, start_time=pd.to_datetime(start_ts13, unit='ms').tz_localize('UTC'))
+            # timezone of binance is UTC+0
+            params['startTime'] = start_ts13                        # update start_time
+            data = requests.get(url, params=params).json()
+            data_li.extend(data) 
+            if len(data) < limit:
+                break    
+            start_ts13 = data[-1]['fundingTime'] + 1
+
+        df = pd.DataFrame(data_li)
+        df.columns = columns
+        df = df[need_col].set_index(['datetime']).sort_index()
+        df.index = pd.to_datetime(df.index, unit='ms').tz_localize('UTC').tz_convert(self.timezone)
+        return df
+
+
+    def update_ohlcv(self, start:str, freq:str, symbol_li:list=None, end:str=None):
+        """
+        Update ohlcv for the given symbols.
 
         Args:
-        - start (str): Start date. (e.g., '2023-1-1 12:00:00+08:00')
+        - start (str): Start datetime. (e.g., '2023-1-1 12:00:00+08:00')
         - freq (str): Frequency of data (e.g., '30m', '1d', '1h'). 
         - symbol_li (list): List of symbols to download.
+        - end (str): End datetime. (see start)
 
         Example:
-            download_ohlcv('2023-1-1 12:00:00+08:00', '30m', ['BTCUSDT', 'ETHUSDT'])
+            update_ohlcv('2021-1-1', '30m', ['BTCUSDT', 'ETHUSDT'])
 
         Mind
         - No symbol checking in symbol_li.
-        - timezone = 'UTC' in binance
+        - timezone = 'UTC' in binance.
+        - update the data at the time of execution if no 'end'. 
+            - ( all symbols with the same ending datetime )
         """
+        item = 'ohlcv'
         save_dir = os.path.join(PROJECT_ROOT, 'data_base', self.exchange, self.symbol_type, freq)
         os.makedirs(save_dir, exist_ok=True)
 
         url = self.get_end_point() + self.get_suffix_kline()
         start_ts13 = self.get_ts13(start)
+        end_ts13 = self.get_ts13(end) if end else int(time.time()*1000)
         limit = self.get_limit_kline()
         columns = self.get_columns_kline()
-        
+
         if not symbol_li:
             url_exchange_info = self.get_end_point() + self.get_suffix_exchange_info()
             exchange_info = requests.get(url_exchange_info).json()
@@ -78,68 +141,157 @@ class BinanceLoader(ExchangeData):
 
         for symbol in symbol_li:
             symbol_amount = len(symbol_li)
-            print(f"downloading {symbol_li.index(symbol)+1}/{symbol_amount} symbol")
+            message.updating(item, symbol_li.index(symbol)+1, symbol_amount)
 
-            df = self.fetch_ohlcv(
-                url = url,
-                symbol = symbol,
-                start_ts13 = start_ts13,
-                freq = freq,
-                limit = limit,
-                columns = columns,
-            )
-            
             file_name = f"{symbol}_ohlcv.pkl"
             file_path = os.path.join(save_dir, file_name)
-            df.to_pickle(file_path)
-            print(f"{symbol} has been downloaded to {file_path}")
+            
+            # no file
+            if not os.path.isfile(file_path):
+                message.necessary_creating(item, symbol)
+                df = self.fetch_ohlcv(
+                    url = url,
+                    symbol = symbol,
+                    freq = freq,
+                    start_ts13 = start_ts13,
+                    end_ts13 = end_ts13,
+                    limit = limit,
+                    columns = columns,
+                )
+                df.to_pickle(file_path)
+                message.donload_completed(item, symbol, file_path)
+
+            # file exists
+            else:          
+                df_ori = pd.read_pickle(file_path)
+                start_ts13_ori = int(df_ori.index[0].timestamp()*1000)
+                end_ts13_ori = int(df_ori.index[-1].timestamp()*1000)
+                update_li = [df_ori]
+
+                if (start_ts13 > start_ts13_ori) & (end_ts13 < end_ts13_ori):
+                    message.unnecessary_update(item, symbol)
+                    continue
+                
+                # head
+                if start_ts13 < start_ts13_ori:
+                    df_new_head = self.fetch_ohlcv(
+                        url = url,
+                        symbol = symbol,
+                        start_ts13 = start_ts13,
+                        end_ts13 = start_ts13_ori-1,
+                        freq = freq,
+                        limit = limit,
+                        columns = columns,
+                    )
+                    update_li.insert(0, df_new_head) 
+
+                # tail
+                if end_ts13 > end_ts13_ori:
+                    df_new_tail = self.fetch_ohlcv(
+                        url = url,
+                        symbol = symbol,
+                        start_ts13 = end_ts13_ori+1,
+                        end_ts13 = end_ts13,
+                        freq = freq,
+                        limit = limit,
+                        columns = columns,
+                    )
+                    update_li.append(df_new_tail)
+
+                df_updated = pd.concat(update_li)
+                df_updated.to_pickle(file_path)
+                message.update_completed(item, symbol)
 
 
-    def update_ohlcv(self, freq:str, symbol_li:list=None,):
+    def update_funding_rate(self, start:str, symbol_li:list=None, end:str=None):
         """
-        Update ohlcv for the given symbols.
+        Update funding rate for the given symbols.
 
         Args:
-        - freq (str): Frequency of data (e.g., '30m', '1d', '1h'). 
+        - start (str): Start datetime. (e.g., '2023-1-1 12:00:00+08:00')
         - symbol_li (list): List of symbols to download.
+        - end (str): End datetime. (see start)
 
         Example:
-            download_ohlcv('30m', ['BTCUSDT', 'ETHUSDT'])
+            update_ohlcv('2021-1-1', ['BTCUSDT', 'ETHUSDT'])
 
         Mind
         - No symbol checking in symbol_li.
-        - timezone = 'UTC' in binance
+        - timezone = 'UTC' in binance.
+        - update the data at the time of execution if no 'end'. 
+            - ( all symbols with the same ending datetime )
         """
-        save_dir = os.path.join(PROJECT_ROOT, 'data_base', self.exchange, self.symbol_type, freq)
+        item = 'funding_rate'
+        save_dir = os.path.join(PROJECT_ROOT, 'data_base', self.exchange, self.symbol_type, 'funding_rate')
         os.makedirs(save_dir, exist_ok=True)
 
-        url = self.get_end_point() + self.get_suffix_kline()
-        limit = self.get_limit_kline()
-        columns = self.get_columns_kline()
-        
+        url = self.get_end_point() + self.get_suffix_funding_rate()
+        start_ts13 = self.get_ts13(start)
+        end_ts13 = self.get_ts13(end) if end else int(time.time()*1000)
+        limit = self.get_limit_funding_rate()
+        columns = self.get_columns_funding_rate()
+
         if not symbol_li:
-            file_li = os.listdir(save_dir)
-            symbol_li = [i.split('_')[0] for i in file_li]
+            url_exchange_info = self.get_end_point() + self.get_suffix_exchange_info()
+            exchange_info = requests.get(url_exchange_info).json()
+            symbol_li = [i['symbol'] for i in exchange_info['symbols'] if i['quoteAsset']=='USDT']
 
         for symbol in symbol_li:
             symbol_amount = len(symbol_li)
-            print(f"updating {symbol_li.index(symbol)+1}/{symbol_amount} symbol")
+            message.updating(item, symbol_li.index(symbol)+1, symbol_amount)
 
-            file_name = f"{symbol}_ohlcv.pkl"
+            file_name = f"{symbol}_funding_rate.pkl"
             file_path = os.path.join(save_dir, file_name)
             
-            df_ori = pd.read_pickle(file_path)
-            start_ts13 = int(df_ori.index[-1].timestamp()*1000) + 1
-            df_new = self.fetch_ohlcv(
-                url = url,
-                symbol = symbol,
-                start_ts13 = start_ts13,
-                freq = freq,
-                limit = limit,
-                columns = columns,
-            )
+            # no file
+            if not os.path.isfile(file_path):
+                message.necessary_creating(item, symbol)
+                df = self.fetch_funding_rate(
+                    url = url,
+                    symbol = symbol,
+                    start_ts13 = start_ts13,
+                    end_ts13 = end_ts13,
+                    limit = limit,
+                    columns = columns,
+                )
+                df.to_pickle(file_path)
+                message.donload_completed(item, symbol, file_path)
 
-            df_updated = pd.concat([df_ori, df_new])
-            df_updated.to_pickle(file_path)
-            print(f"{symbol} has been updated")
+            # file exists
+            else:          
+                df_ori = pd.read_pickle(file_path)
+                start_ts13_ori = int(df_ori.index[0].timestamp()*1000)
+                end_ts13_ori = int(df_ori.index[-1].timestamp()*1000)
+                update_li = [df_ori]
 
+                if (start_ts13 > start_ts13_ori) & (end_ts13 < end_ts13_ori):
+                    message.unnecessary_update(item, symbol)
+                    continue
+                
+                # head
+                if start_ts13 < start_ts13_ori:
+                    df_new_head = self.fetch_funding_rate(
+                        url = url,
+                        symbol = symbol,
+                        start_ts13 = start_ts13,
+                        end_ts13 = start_ts13_ori-1,
+                        limit = limit,
+                        columns = columns,
+                    )
+                    update_li.insert(0, df_new_head) 
+
+                # tail
+                if end_ts13 > end_ts13_ori:
+                    df_new_tail = self.fetch_funding_rate(
+                        url = url,
+                        symbol = symbol,
+                        start_ts13 = end_ts13_ori+1,
+                        end_ts13 = end_ts13,
+                        limit = limit,
+                        columns = columns,
+                    )
+                    update_li.append(df_new_tail)
+
+                df_updated = pd.concat(update_li)
+                df_updated.to_pickle(file_path)
+                message.update_completed(item, symbol)

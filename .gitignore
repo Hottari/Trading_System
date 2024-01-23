@@ -1,7 +1,11 @@
-# file
+# folder
 __pycache__/
 data_base/
 test/
+
+# file
+test.py
+test.ipynb
 
 # type
 *.csv
