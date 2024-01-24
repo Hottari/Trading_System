@@ -1,18 +1,18 @@
 import numpy as np
 import pandas as pd
 
-
-def add_time(df):
-    df['hour'] = df.index.hour
-    df['weekday'] = df.index.weekday + 1
-    df['month'] = df.index.month
-    df['time'] = df.index.hour + df.index.minute/100
-    df['date'] = pd.to_datetime(df.index.date)
-    return df
-
-class OHLCVProcess():
+class DataProcess():
     def __init__(self):
         pass
+
+    def add_time(self, df, datetime_name='datetime'):
+        df['year'] = df[datetime_name].dt.year
+        df['month'] = df[datetime_name].dt.month
+        df['hour'] = df[datetime_name].dt.hour
+        df['weekday'] = df[datetime_name].dt.weekday + 1
+        df['time'] = df.hour + df[datetime_name].dt.minute/100
+        df['date'] = pd.to_datetime(df[datetime_name].dt.date)
+        return df
 
     def resample_ohlcv(
             self, 

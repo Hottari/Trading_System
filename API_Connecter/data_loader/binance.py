@@ -61,7 +61,7 @@ class BinanceLoader(ExchangeData):
 
         # form dataframe
         if data_li: 
-            df = pd.DataFrame(data_li, columns=columns)[need_col].set_index(['datetime']).sort_index()
+            df = pd.DataFrame(data_li, columns=columns)[need_col].set_index(['datetime']).astype('float32').sort_index()
             df.index = pd.to_datetime(df.index, unit='ms').tz_localize('UTC').tz_convert(self.timezone)
             return df
         else: 
@@ -106,7 +106,7 @@ class BinanceLoader(ExchangeData):
         if data_li: 
             df = pd.DataFrame(data_li)
             df.columns = columns
-            df = df[need_col].set_index(['datetime']).sort_index()
+            df = df[need_col].set_index(['datetime']).astype('float32').sort_index()
             df.index = pd.to_datetime(df.index, unit='ms').tz_localize('UTC').tz_convert(self.timezone)
             return df
         else: 
@@ -133,7 +133,7 @@ class BinanceLoader(ExchangeData):
             - ( all symbols with the same ending datetime )
         """
         item = 'ohlcv'
-        save_dir = os.path.join(PROJECT_ROOT, 'data_base', self.exchange, self.symbol_type, freq)
+        save_dir = os.path.join(PROJECT_ROOT, 'data_base', self.exchange, self.symbol_type, item, freq)
         os.makedirs(save_dir, exist_ok=True)
 
         url = self.get_end_point() + self.get_suffix_kline()
@@ -237,7 +237,7 @@ class BinanceLoader(ExchangeData):
             - ( all symbols with the same ending datetime )
         """
         item = 'funding_rate'
-        save_dir = os.path.join(PROJECT_ROOT, 'data_base', self.exchange, self.symbol_type, 'funding_rate')
+        save_dir = os.path.join(PROJECT_ROOT, 'data_base', self.exchange, self.symbol_type, item)
         os.makedirs(save_dir, exist_ok=True)
 
         url = self.get_end_point() + self.get_suffix_funding_rate()
