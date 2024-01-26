@@ -2,7 +2,7 @@ import sys, os
 PROJECT_ROOT = os.path.join(os.path.dirname(__file__), '..',)
 sys.path.insert(1, PROJECT_ROOT) 
 
-from API_Connecter.data_loader.binance import BinanceLoader
+from Data_Loader.api_connecter.binance.binance_loader import BinanceLoader
 
 def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_li=None):
     bl = BinanceLoader(exchange, symbol_type, timezone)

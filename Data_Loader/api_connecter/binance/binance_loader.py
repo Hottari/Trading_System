@@ -4,7 +4,7 @@ import os, sys
 import requests
 import time
 
-PROJECT_ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
+PROJECT_ROOT = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(1, PROJECT_ROOT) 
 from prepare_data import ExchangeData
 from message_manager import MessageManager
