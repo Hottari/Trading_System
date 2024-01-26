@@ -1,9 +1,9 @@
 # folder
 __pycache__/
 data_base/
-strategy/
 test/
 *test_*/
+Trading_Strategies/
 
 # file
 test.py
