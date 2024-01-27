@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-class DataProcess():
+class DataProcessor():
     def __init__(self):
         pass
 
@@ -24,10 +24,10 @@ class DataProcess():
         Get resampleed ohlcv.
 
         Args:
-            df (pd.DataFrame): dataframe with ohlcv and datetime type index.
-            freq: (str): resample frequence.
-            ohlcv_li (list): ohlcv column name list.
-            exchange (str): data source ( from which exchange )  
+        - df (pd.DataFrame): dataframe with ohlcv and datetime type index.
+        - freq: (str): resample frequence.
+        - ohlcv_li (list): ohlcv column name list.
+        - exchange (str): data source ( from which exchange )  
 
         Returns:
             pd.DataFrame: resampled dataframe with ohlcv only.
@@ -76,13 +76,13 @@ class DataProcess():
         Get adjusted price.
 
         Args:
-            df (pd.DataFrame): dataframe with Ret, un-rejusted OHLC 
+        - df (dataframe): dataframe with ret, un-rejusted OHLC 
 
         Returns:
-            pd.DataFrame: original df add adjusted price columns
+            dataFrame: original df add adjusted price columns
 
         Example:
-            df_adj = df_ori.groupby('Code', group_keys=False).apply(add_adj_ohlc)
+            df_adj = df_ori.groupby('symbol').apply(add_adj_ohlc).droplevel(0)
         
         Mind:
         - columns 'ret', 'close' are necessary in df
@@ -98,11 +98,6 @@ class DataProcess():
         return df
 
 
-
-class GetFactor():
-    def __init__(self, ):
-        pass
-
     def add_yoy(self, df_data:pd.DataFrame, data_name_li:list):
         """
         Add yoy to DataFrame.
@@ -116,7 +111,8 @@ class GetFactor():
             df_result = get_factor.add_yoy(df_data, data_name_li)
         
         Mind: 
-        - There should be a year and quarter, or month, or another time period in the index.
+        - There should be a year with quarter, or month, or any other time period in the index.
+            - ex. ['year', 'month'] or ['year', 'quarter']
         - keep NaN ( without dropna() ).  
         
         """
@@ -131,6 +127,10 @@ class GetFactor():
 
         return df
 
+
+class GetFactor():
+    def __init__(self, ):
+        pass
 
     def add_rolling_stand(
             self, 
@@ -147,24 +147,20 @@ class GetFactor():
         - data_name_li (list): List of column names to calculate yoy.
 
         Example:
-            get_factor = GetFactor()
-            df_result = get_factor.add_yoy(df_data, data_name_li)
-        
-        Mind: There should be a year and quarter, or month, or another time period in the index.
-        
+        - get_factor = GetFactor()
+        - df_result = get_factor.add_rolling_stand(df_data, data_name_li)        
         """
         df = df_data.copy()
         mean_name = f"mean_current{window}_past{past_period}"
         std_name = f"std_current{window}_past{past_period}"
 
         for data_name in data_name_li:
-            data = df[data_name].values
             mean = ( df[data_name].rolling(window).mean().shift(past_period) ).values
             std = ( df[data_name].rolling(window).std().shift(past_period) ).values
-            stand = ( data-mean )/std
+            #stand = ( data-mean )/std
             
             df[f"{data_name}_{mean_name}"] = mean
             df[f"{data_name}_{std_name}"] = std
-            df[f"{data_name}_stand"] = stand
+            df[f"{data_name}_stand"] = (df[data_name] - df[f"{data_name}_{mean_name}"])/df[f"{data_name}_{std_name}"]
 
         return df

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from numba import jit
 
-class BackTest():
+class BackTester():
     def __init__(self):
         pass
 
