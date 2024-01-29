@@ -140,23 +140,29 @@ class GetFactor():
             past_period:int = 1,
         ):
         """
-        Add yoy to DataFrame.
+        Add rolling_stand(_stand) to DataFrame.
 
         Args:
         - df_data (pd.DataFrame): DataFrame to add yoy columns.
         - data_name_li (list): List of column names to calculate yoy.
+        - window (int): rolling window of stand
+        - past_period (int): past period of stand
 
         Example:
         - get_factor = GetFactor()
         - df_result = get_factor.add_rolling_stand(df_data, data_name_li)        
+        
+        Mind:
+        - There should be 'symbol' in index. ( ex. ['year', 'month', 'symbol'] )
         """
-        df = df_data.copy()
-        mean_name = f"mean_current{window}_past{past_period}"
-        std_name = f"std_current{window}_past{past_period}"
+        df = df_data.unstack().sort_index().copy() # set symbol index to the column
+        # mean_name = f"mean_current{window}_past{past_period}"
+        # std_name = f"std_current{window}_past{past_period}"
 
         for data_name in data_name_li:
-            mean = ( df[data_name].rolling(window).mean().shift(past_period) ).values
-            std = ( df[data_name].rolling(window).std().shift(past_period) ).values
+            df_mean = df[data_name].rolling(window).mean().shift(past_period)
+            df_std = df[data_name].rolling(window).std().shift(past_period)
+            df[f"{data_name}_stand"] = (df - df_mean)/df_std
             #stand = ( data-mean )/std
             
             df[f"{data_name}_{mean_name}"] = mean
