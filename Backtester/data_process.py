@@ -153,20 +153,14 @@ class GetFactor():
         - df_result = get_factor.add_rolling_stand(df_data, data_name_li)        
         
         Mind:
-        - There should be 'symbol' in index. ( ex. ['year', 'month', 'symbol'] )
+        - There should be 'symbol' in index. 
+             - ex. ['year', 'month', 'symbol']
         """
         df = df_data.unstack().sort_index().copy() # set symbol index to the column
-        # mean_name = f"mean_current{window}_past{past_period}"
-        # std_name = f"std_current{window}_past{past_period}"
 
         for data_name in data_name_li:
             df_mean = df[data_name].rolling(window).mean().shift(past_period)
             df_std = df[data_name].rolling(window).std().shift(past_period)
-            df[f"{data_name}_stand"] = (df - df_mean)/df_std
-            #stand = ( data-mean )/std
-            
-            df[f"{data_name}_{mean_name}"] = mean
-            df[f"{data_name}_{std_name}"] = std
-            df[f"{data_name}_stand"] = (df[data_name] - df[f"{data_name}_{mean_name}"])/df[f"{data_name}_{std_name}"]
+            df[f"{data_name}_stand"] = (df[data_name] - df_mean)/df_std
 
-        return df
+        return df.stack()
