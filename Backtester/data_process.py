@@ -161,6 +161,7 @@ class GetFactor():
         for data_name in data_name_li:
             df_mean = df[data_name].rolling(window).mean().shift(past_period)
             df_std = df[data_name].rolling(window).std().shift(past_period)
-            df[f"{data_name}_stand"] = (df[data_name] - df_mean)/df_std
+            df_stand = (df[data_name] - df_mean)/df_std
+            df_data[f"{data_name}_stand"] = df_stand.stack()
 
         return df.stack()
