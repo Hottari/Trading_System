@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,9 +7,7 @@ import seaborn as sns
 import plotly.graph_objects as go
 import plotly.express as px
 import plotly.offline as pyo
-import os
-
-
+from itertools import cycle
 
 
 class PerfPlot():
@@ -111,22 +110,16 @@ class PerfPlot():
 
 
 
-    def plot_monthly_return(monthly_return_df:pd.DataFrame):
-        # Convert to a DataFrame
+    def plot_monthly_ret(monthly_return_df):
+
         df = monthly_return_df
-
-        # Ensure the 'Date' column is a datetime type
-        df['Date'] = pd.to_datetime(df['Date'])
-
         # Extract years and months
         df['Year'] = df['Date'].dt.year
         df['Month'] = df['Date'].dt.month_name()
 
         # Pivot the table for heatmap
         pivot_table = df.pivot(index="Month", columns="Year", values="Return")
-
         pivot_table *= 100  # Multiplying the returns by 100
-
 
         # Reorder pivot_table index to match the calendar months orde
         months_order = [
@@ -135,9 +128,68 @@ class PerfPlot():
         ]
         pivot_table = pivot_table.reindex(months_order)
 
-        plt.figure(figsize=(10, 8))
-        ax = sns.heatmap(pivot_table, annot=True, cmap='coolwarm', center=0, 
-                        norm=TwoSlopeNorm(vmin=pivot_table.min().min(), vcenter=0, vmax=pivot_table.max().max()),
-                        fmt=".2f")
-        plt.title('Monthly Portfolio Performance Heatmap (Return * 100)')
+        fig, ax = plt.subplots(figsize=(12, 9))
+        sns.heatmap(
+            data = pivot_table,
+            norm = TwoSlopeNorm(vmin=pivot_table.min().min(), vcenter=0, vmax=pivot_table.max().max()),
+            fmt = ".2f", 
+            annot=True,
+            annot_kws = {"size": 8},
+            ax = ax,  # Ensure ax is specified for the heatmap
+            cmap = 'RdYlGn',
+        )
+        ax.grid(False)  # Remove grid lines (if any)
+
+        plt.title('Portfolio Monthly Return(%)', fontsize=18, pad=20)  # Increase pad value to move the title higher
+        plt.xticks(rotation=45)
         plt.show()
+
+    
+    def plot_river_chart(df_data, figure_width=1200, figure_height=600):
+        df = df_data.copy()
+
+        # Select a Plotly Express built-in color sequence
+        color_palette = px.colors.qualitative.Set1  # Example color palette
+        color_cycle = cycle(color_palette)  # Create a cycle iterator for the color palette
+
+        # Initialize the figure with specified layout dimensions
+        fig = go.Figure()
+
+        # Add each asset as a trace with a unique color from the cycle
+        for item in df.columns:
+            fig.add_trace(go.Scatter(
+                x=df.index,
+                y=df[item],
+                hoverinfo='x+y',
+                mode='lines',
+                line=dict(width=0.5, color=next(color_cycle)),  # Get the next color from the cycle
+                stackgroup='one',     # Creates the stacking effect
+                groupnorm='percent',  # Normalize to percentage for full area coverage
+                name=item
+            ))
+
+        # Update the layout with axis labels, title settings, and figure dimensions
+        fig.update_layout(
+            showlegend=True,
+            # xaxis=dict(
+            #     title='Date',  # X-axis label
+            #     type='date'
+            # ),
+            yaxis=dict(
+                title='Asset Weight',  # Y-axis label
+                type='linear',
+                range=[1, 100],
+                ticksuffix='%'
+            ),
+            title=dict(
+                text="River Chart of Asset Weighting Over Time",
+                x = 0.5,  # Center the title
+                xanchor = 'center',  # Use the middle of the title for centering
+                font=dict(  # Customize font settings
+                    size=24  # Bigger font size for the title
+                )
+            ),
+            width = figure_width,
+            height = figure_height
+        )
+        fig.show()

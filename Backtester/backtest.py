@@ -102,22 +102,50 @@ class BackTester():
 
 
     # performance
-    def perf_TMBA(self, ret_ts:pd.Series, annual_factor=252):
-        ret_cum = ret_ts.fillna(0).cumsum()                  # in case NaN
+    def perf_TMBA(ret:pd.Series, annual_factor=252, is_compound=False):
+        
+        ret_ts = ret.copy()
 
+        if is_compound: 
+            ret_ts[1:] = (1 + ret_ts.fillna(0)).cumprod()[1:].diff()
+
+        ret_cum = ret_ts.fillna(0).cumsum()
         total_return = ret_cum.values[-1]
-        annual_return = ret_ts.mean()*annual_factor
+        year_number = len(ret_ts.index.year.drop_duplicates())
+        annual_return = (total_return+1) ** (1/year_number)-1
         profit_ts = ret_ts[ret_ts>0]
         loss_ts = ret_ts[ret_ts<0]
-        profit = profit_ts.cumsum().values[-1]
-        loss = loss_ts.cumsum().values[-1]
+
+        try:
+            profit = profit_ts.cumsum().values[-1]
+            loss = loss_ts.cumsum().values[-1]
+
+        except:
+            profit, loss = 0, 1
+
         win_times = profit_ts.shape[0]
         lose_times = loss_ts.shape[0]
 
-        sharpe = ret_ts.mean() / ret_ts.std() * np.sqrt(annual_factor)
-        mdd = (ret_cum - np.maximum.accumulate(ret_cum) ).min()
+        annual_sharpe = ret_ts.mean() / ret_ts.std() * np.sqrt(annual_factor)
+        annual_vol =  ret_ts.std() * np.sqrt(annual_factor)
+
+        ts_dd = (ret_cum - np.maximum.accumulate(ret_cum) ) # ret_cum - ret_cum.cummax()
+        mdd = ts_dd.min()
         ret_to_risk = total_return/np.abs(mdd)
-        profit_to_loss = profit/(-loss)
+        profit_to_loss = profit/(-loss) #if ~loss==0 else 0
+
+
+        max_dd_period = 0
+        current_consecutive = 0
+
+        # Iterate through the Series
+        for value in ts_dd:
+            if value < 0:
+                current_consecutive += 1
+
+                max_dd_period = max(max_dd_period, current_consecutive)
+            else:
+                current_consecutive = 0
 
         try: win_rate = win_times / (win_times + lose_times)  # in case no enter
         except: win_rate = 0
@@ -125,12 +153,15 @@ class BackTester():
         perf_dict = {
             'Total_Return(%)': total_return*100,
             'Annual_Return(%)': annual_return*100,
-            'Annnal_Sharpe': sharpe,
+            'Annnal_Sharpe': annual_sharpe,
+            'Annual_Vol': annual_vol,
             'MDD(%)': mdd*100,
+            'max_dd_period': -max_dd_period,
             'Ret_to_Risk': ret_to_risk, 
             'profit_to_loss': profit_to_loss,
+            'Win_Rate(%)': win_rate*100,
+            # TODO
             #'aveg_holding_period': aveg_holding_period,
-            'Win_Rate': win_rate,
             #'Total_Trades': pf.trades.count(),
         }
 
