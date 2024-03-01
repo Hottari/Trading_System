@@ -1,11 +1,14 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.colors import TwoSlopeNorm
 import seaborn as sns
 import plotly.graph_objects as go
 import plotly.express as px
 import plotly.offline as pyo
 import os
+
+
 
 
 class PerfPlot():
@@ -104,4 +107,37 @@ class PerfPlot():
         plt.ylabel(f"{equity_name}")
         plt.xlabel('Date')
         plt.title(f'Profit & Drawdown', fontsize=16)
+        plt.show()
+
+
+
+    def plot_monthly_return(monthly_return_df:pd.DataFrame):
+        # Convert to a DataFrame
+        df = monthly_return_df
+
+        # Ensure the 'Date' column is a datetime type
+        df['Date'] = pd.to_datetime(df['Date'])
+
+        # Extract years and months
+        df['Year'] = df['Date'].dt.year
+        df['Month'] = df['Date'].dt.month_name()
+
+        # Pivot the table for heatmap
+        pivot_table = df.pivot(index="Month", columns="Year", values="Return")
+
+        pivot_table *= 100  # Multiplying the returns by 100
+
+
+        # Reorder pivot_table index to match the calendar months orde
+        months_order = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ]
+        pivot_table = pivot_table.reindex(months_order)
+
+        plt.figure(figsize=(10, 8))
+        ax = sns.heatmap(pivot_table, annot=True, cmap='coolwarm', center=0, 
+                        norm=TwoSlopeNorm(vmin=pivot_table.min().min(), vcenter=0, vmax=pivot_table.max().max()),
+                        fmt=".2f")
+        plt.title('Monthly Portfolio Performance Heatmap (Return * 100)')
         plt.show()
