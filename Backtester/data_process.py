@@ -71,7 +71,7 @@ class DataProcessor():
         return df
 
 
-    def add_adj_ohlc(self, df_rohlc:pd.DataFrame)->pd.DataFrame:
+    def add_adj_ohlc(df_rohlc:pd.DataFrame, is_c_only=False)->pd.DataFrame:
         """
         Get adjusted price.
 
@@ -82,7 +82,7 @@ class DataProcessor():
             dataFrame: original df add adjusted price columns
 
         Example:
-            df_adj = df_ori.groupby('symbol').apply(add_adj_ohlc).droplevel(0)
+            df_adj = df.groupby('symbol').apply(add_adj_ohlc, is_c_only=True).droplevel(0)
         
         Mind:
         - columns 'ret', 'close' are necessary in df
@@ -90,10 +90,13 @@ class DataProcessor():
         df = df_rohlc.copy()
         ret_comprod_reverse = (1 + df['ret']).iloc[::-1].cumprod().iloc[::-1].shift(-1).fillna(1) # adj from t-1
         close_adj = np.round(df['close'].iloc[-1] / ret_comprod_reverse, 3)                       # Close[-1] is the base price
-        df['adj_rate'] = close_adj/df['close']
-        df['open_adj'] = np.round(df['open'] * df['adj_rate'], 3)
-        df['high_adj'] = np.round(df['high'] * df['adj_rate'], 3)
-        df['low_adj'] = np.round(df['low'] * df['adj_rate'], 3)
+        
+        if not is_c_only:
+            df['adj_rate'] = close_adj/df['close']
+            df['open_adj'] = np.round(df['open'] * df['adj_rate'], 3)
+            df['high_adj'] = np.round(df['high'] * df['adj_rate'], 3)
+            df['low_adj'] = np.round(df['low'] * df['adj_rate'], 3)
+        
         df['close_adj'] = close_adj
         return df
 
