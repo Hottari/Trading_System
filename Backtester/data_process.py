@@ -71,7 +71,7 @@ class DataProcessor():
         return df
 
 
-    def add_adj_ohlc(df_rohlc:pd.DataFrame, is_c_only=False)->pd.DataFrame:
+    def add_adj_ohlc(df_rohlc:pd.DataFrame, is_c_only:bool=False)->pd.DataFrame:
         """
         Get adjusted price.
 
