@@ -113,7 +113,7 @@ class BackTester():
             ret_cum = ret_ts.cumsum()
 
         total_return = ret_cum.values[-1]
-        cagr = ((ret_cum.values[-1] +1) ** (1/len(ret_cum))) ** annual_factor
+        cagr = ((ret_cum.values[-1] +1) ** (1/len(ret_cum))) ** annual_factor -1
 
         ts_dd = (( (1 + ret_cum) / (1 + ret_cum).cummax())-1)
         mdd = np.abs(ts_dd.min())
@@ -136,8 +136,8 @@ class BackTester():
         annual_vol =  ret_ts.std() * np.sqrt(annual_factor)
 
         ret_to_vol = total_return / annual_vol
-        cagr_to_vol = cagr / annual_vol
         ret_to_mdd = total_return / mdd
+        cagr_to_vol = cagr / annual_vol
         cagr_to_mdd = cagr / mdd
 
         profit_to_loss = profit/(-loss) #if ~loss==0 else 0
@@ -170,8 +170,8 @@ class BackTester():
             'max_dd_period': -max_dd_period,
 
             'Ret_to_Vol': ret_to_vol,
-            'CAGR_to_Vol': cagr_to_vol,
             'Ret_to_MDD':ret_to_mdd,
+            'CAGR_to_Vol': cagr_to_vol,
             'CAGR_to_MDD':cagr_to_mdd,
 
             'profit_to_loss': profit_to_loss,
