@@ -102,7 +102,7 @@ class BackTester():
 
 
     # performance
-    def perf_table(ret:pd.Series, annual_factor=252, is_compound=False):
+    def perf_table(ret:pd.Series, annual_factor=252, is_compound=False, name='None'):
         
         ret_ts = ret.fillna(0).copy()    # incase error value compute
 
@@ -113,7 +113,7 @@ class BackTester():
             ret_cum = ret_ts.cumsum()
 
         total_return = ret_cum.values[-1]
-        cagr = ((cum.values[-1] +1) ** (1/len(cum))) ** annual_factor
+        cagr = ((ret_cum.values[-1] +1) ** (1/len(ret_cum))) ** annual_factor
 
         ts_dd = (( (1 + ret_cum) / (1 + ret_cum).cummax())-1)
         mdd = np.abs(ts_dd.min())
@@ -159,6 +159,8 @@ class BackTester():
         except: win_rate = 0
         
         perf_dict = {
+            'name': name,
+            
             'Total_Return(%)': total_return*100,
             'CAGR(%)': cagr*100,
             'Annnal_Sharpe': annual_sharpe,
@@ -179,4 +181,4 @@ class BackTester():
             #'Total_Trades': pf.trades.count(),
         }
 
-        return pd.DataFrame(perf_dict)
+        return pd.DataFrame([perf_dict])
