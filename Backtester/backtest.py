@@ -102,19 +102,25 @@ class BackTester():
 
 
     # performance
-    def perf_TMBA(ret:pd.Series, annual_factor=252, is_compound=False):
+    def perf_table(ret:pd.Series, annual_factor=252, is_compound=False):
         
-        ret_ts = ret.copy()
+        ret_ts = ret.fillna(0).copy()    # incase error value compute
 
         if is_compound: 
-            ret_ts[1:] = (1 + ret_ts.fillna(0)).cumprod()[1:].diff()
+            ret_cum = (1 + ret).cumprod() -1
+            
+        else:
+            ret_cum = ret_ts.cumsum()
 
-        ret_cum = ret_ts.fillna(0).cumsum()
         total_return = ret_cum.values[-1]
-        year_number = len(ret_ts.index.year.drop_duplicates())
-        annual_return = (total_return+1) ** (1/year_number)-1
-        profit_ts = ret_ts[ret_ts>0]
-        loss_ts = ret_ts[ret_ts<0]
+        cagr = ((cum.values[-1] +1) ** (1/len(cum))) ** annual_factor
+
+        ts_dd = (( (1 + ret_cum) / (1 + ret_cum).cummax())-1)
+        mdd = np.abs(ts_dd.min())
+
+        ret_diff = ret_cum.diff().fillna(0)
+        profit_ts = ret_diff[ret_diff>0]
+        loss_ts = ret_diff[ret_diff<0]
 
         try:
             profit = profit_ts.cumsum().values[-1]
@@ -129,12 +135,14 @@ class BackTester():
         annual_sharpe = ret_ts.mean() / ret_ts.std() * np.sqrt(annual_factor)
         annual_vol =  ret_ts.std() * np.sqrt(annual_factor)
 
-        ts_dd = (ret_cum - np.maximum.accumulate(ret_cum) ) # ret_cum - ret_cum.cummax()
-        mdd = ts_dd.min()
-        ret_to_risk = total_return/np.abs(mdd)
+        ret_to_vol = total_return / annual_vol
+        cagr_to_vol = cagr / annual_vol
+        ret_to_mdd = total_return / mdd
+        cagr_to_mdd = cagr / mdd
+
         profit_to_loss = profit/(-loss) #if ~loss==0 else 0
 
-
+        # max dd cousective periods
         max_dd_period = 0
         current_consecutive = 0
 
@@ -152,12 +160,18 @@ class BackTester():
         
         perf_dict = {
             'Total_Return(%)': total_return*100,
-            'Annual_Return(%)': annual_return*100,
+            'CAGR(%)': cagr*100,
             'Annnal_Sharpe': annual_sharpe,
             'Annual_Vol': annual_vol,
+
             'MDD(%)': mdd*100,
             'max_dd_period': -max_dd_period,
-            'Ret_to_Risk': ret_to_risk, 
+
+            'Ret_to_Vol': ret_to_vol,
+            'CAGR_to_Vol': cagr_to_vol,
+            'Ret_to_MDD':ret_to_mdd,
+            'CAGR_to_MDD':cagr_to_mdd,
+
             'profit_to_loss': profit_to_loss,
             'Win_Rate(%)': win_rate*100,
             # TODO
@@ -165,4 +179,4 @@ class BackTester():
             #'Total_Trades': pf.trades.count(),
         }
 
-        return perf_dict
+        return pd.DataFrame(perf_dict)
