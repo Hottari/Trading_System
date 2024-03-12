@@ -100,7 +100,6 @@ class BackTester():
         return result
 
 
-
     # performance
     def perf_table(ret:pd.Series, annual_factor=252, is_compound=False, name='None'):
         
@@ -115,7 +114,8 @@ class BackTester():
         total_return = ret_cum.values[-1]
         cagr = ((ret_cum.values[-1] +1) ** (1/len(ret_cum))) ** annual_factor -1
 
-        ts_dd = (( (1 + ret_cum) / (1 + ret_cum).cummax())-1)
+
+        ts_dd = (ret_cum +1) / (np.maximum(0, ret_cum.cummax()) +1) - 1
         mdd = np.abs(ts_dd.min())
 
         ret_diff = ret_cum.diff().fillna(0)
@@ -166,7 +166,7 @@ class BackTester():
             'Annnal_Sharpe': annual_sharpe,
             'Annual_Vol': annual_vol,
 
-            'MDD(%)': mdd*100,
+            'MDD(%)': -mdd*100,
             'max_dd_period': -max_dd_period,
 
             'Ret_to_Vol': ret_to_vol,
