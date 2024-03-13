@@ -17,7 +17,7 @@ if __name__ == '__main__':
         'timezone': 'UTC',
         'start': '2015-1-1',
         'end': None,
-        'freq': '15m',
+        'freq': '1m',
         #'symbol_li': ['BTCUSDT', 'ETHUSDT', 'XRPUSDT', 'BNBUSDT', 'SOLUSDT'],
     }
 
