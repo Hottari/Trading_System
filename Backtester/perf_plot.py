@@ -77,40 +77,52 @@ class PerfPlot():
 
 
 
-    def plot_mdd(df_equity:pd.DataFrame, equity_name:str, separate_date:str=None):
+    def plot_mdd(self, df_equity: pd.DataFrame, equity_name: str, separate_date: str = None, is_ret: bool = True):
         equity = df_equity.copy()
-        fig, x = plt.subplots(figsize = (12,5))
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 3), sharex=True)
 
-        # Equity
-        equity[equity_name].plot(
-            label = 'Equity', 
-            ax = x, 
-            c = 'gray', 
-            grid = True
-        )
+        # Remove space between subplots
+        plt.subplots_adjust(hspace=0)
 
-        # New high
+        # Plotting the equity curve
+        ax1.plot(equity.index, equity[equity_name], label='Equity', c='gray')
+        ax1.grid(True)
+
+        # Plotting new highs
         peak_index = equity[equity[equity_name].cummax() == equity[equity_name]].index
-        plt.scatter(
-            peak_index, 
-            equity[equity_name].loc[peak_index],
-            c = '#02ff0f', 
-            label ='New High')
-        if separate_date: plt.axvline(x = pd.to_datetime(separate_date), linestyle ="--", c='blue', alpha = 0.4)
+        ax1.scatter(peak_index, equity[equity_name].loc[peak_index], c='#02ff0f', label='New High')
 
-        # Drawdown
-        equity['drawdown'] = equity[equity_name] - equity[equity_name].cummax()
-        plt.fill_between(equity['drawdown'].index, equity['drawdown'], 0, facecolor='r', label='Drawdown', alpha=0.5)
-        
-        plt.legend()
-        plt.ylabel(f"{equity_name}")
-        plt.xlabel('Date')
-        plt.title(f'Profit & Drawdown', fontsize=16)
+        # If a separation date is provided
+        if separate_date:
+            ax1.axvline(x=pd.to_datetime(separate_date), linestyle="--", c='blue', alpha=0.4)
+            ax2.axvline(x=pd.to_datetime(separate_date), linestyle="--", c='blue', alpha=0.4)
+
+        # Calculating drawdown
+        if is_ret:
+            equity['drawdown'] = (equity[equity_name]+1) / (np.maximum(0, equity[equity_name].cummax())+1) - 1
+        else:
+            equity['drawdown'] = equity[equity_name] - equity[equity_name].cummax()
+
+        # Plotting drawdown
+        ax2.fill_between(equity.index, equity['drawdown'], 0, facecolor='r', label='Drawdown', alpha=0.5)
+
+        # Set limits for the y-axis
+        y_min = equity['drawdown'].min()
+        ax2.set_ylim(y_min, 0)
+
+        # Adding grid to the lower graph
+        ax2.grid(True)
+
+        # Adding legend and labels
+        fig.legend(loc="upper right")
+        ax1.set_ylabel(f"{equity_name}")
+        ax2.set_xlabel('Date')
+        plt.suptitle(f'Profit & Drawdown', fontsize=16)
         plt.show()
 
 
 
-    def plot_monthly_ret(monthly_return_df):
+    def plot_monthly_ret(self, monthly_return_df):
 
         df = monthly_return_df
         # Extract years and months
@@ -145,7 +157,7 @@ class PerfPlot():
         plt.show()
 
     
-    def plot_river_chart(df_data, figure_width=1200, figure_height=600):
+    def plot_river_chart(self, df_data, figure_width=1200, figure_height=600):
         df = df_data.copy()
 
         # Select a Plotly Express built-in color sequence

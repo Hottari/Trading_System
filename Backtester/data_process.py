@@ -5,6 +5,17 @@ class DataProcessor():
     def __init__(self):
         pass
 
+
+    def get_rolling_ema(self, data, window, alpha):
+        ema_data = np.full(window-1, np.nan)
+        for i in range(window-1, len(data)):
+            ema_data = np.append(
+                ema_data, 
+                data[i-window+1:i+1].ewm(alpha=alpha, adjust=False).mean().values[-1]
+            )
+        return ema_data
+
+
     def add_time(self, df, datetime_name='datetime'):
         df['year'] = df[datetime_name].dt.year
         df['month'] = df[datetime_name].dt.month
