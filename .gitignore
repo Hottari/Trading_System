@@ -4,6 +4,7 @@ data_base/
 test/
 *test_*/
 Trading_Strategies/
+Trading_Tracker/
 
 # file
 test.py
