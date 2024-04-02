@@ -56,8 +56,9 @@ class BinanceLoader(ExchangeData):
             data = requests.get(url, params=params).json()
             data_li.extend(data) 
             if len(data) < limit:
-                break    
-            start_ts13 = data[-1][0] + 1
+                break
+            last = -1    
+            start_ts13 = int(data[last][0]) + 1
 
         # form dataframe
         if data_li: 
@@ -68,7 +69,7 @@ class BinanceLoader(ExchangeData):
                 df = pd.DataFrame(data_li, columns=columns)[need_col].set_index(['datetime'])
                 df = df.apply(pd.to_numeric, errors='coerce').sort_index()
 
-            df.index = pd.to_datetime(df.index, unit='ms').tz_localize('UTC').tz_convert(self.timezone)
+            df.index = pd.to_datetime(df.index.astype(float), unit='ms').tz_localize('UTC').tz_convert(self.timezone)
             return df
         else: 
             return pd.DataFrame()
@@ -105,15 +106,17 @@ class BinanceLoader(ExchangeData):
             data = requests.get(url, params=params).json()
             data_li.extend(data) 
             if len(data) < limit:
-                break    
-            start_ts13 = data[-1]['fundingTime'] + 1
+                break
+            last = -1    
+            start_ts13 = int(data[last]['fundingTime']) + 1
+
 
         # form dataframe
         if data_li: 
             df = pd.DataFrame(data_li)
             df.columns = columns
             df = df[need_col].set_index(['datetime']).astype('float64').sort_index()
-            df.index = pd.to_datetime(df.index, unit='ms').tz_localize('UTC').tz_convert(self.timezone)
+            df.index = pd.to_datetime(df.index.astype(float), unit='ms').tz_localize('UTC').tz_convert(self.timezone)
             return df
         else: 
             return pd.DataFrame()

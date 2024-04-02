@@ -37,3 +37,4 @@ params = {
 
 # Run the async function
 asyncio.run(update_data(**params))
+
