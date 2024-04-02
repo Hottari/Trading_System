@@ -49,5 +49,30 @@
 
     "coin":{
         "end_point": "https://dapi.binance.com"
+    },
+
+
+    "long_short_ratio":{
+        "end_point": "https://fapi.binance.com",
+        
+        "suffix": {
+            "global": "/futures/data/globalLongShortAccountRatio",
+            "top_account": "/futures/data/topLongShortAccountRatio",
+            "top_position": "/futures/data/topLongShortPositionRatio"
+        },
+
+        "limit": {
+            "global": 500,
+            "top_account": 500,
+            "top_position": 500
+        },
+
+        "columns": {
+            "global": ["symbol", "long_short_ratio", "long_account", "short_account",  "datetime"],
+            "top_account": ["symbol", "long_short_ratio", "long_account", "short_account",  "datetime"],
+            "top_position": ["symbol", "long_short_ratio", "long_account", "short_account",  "datetime"]
+        }
+        
     }
+
 }

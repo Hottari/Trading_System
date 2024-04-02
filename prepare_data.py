@@ -13,10 +13,11 @@ class ExchangeData:
 
     """
 
-    def __init__(self, exchange, symbol_type):
+    def __init__(self, exchange, symbol_type, long_short_ratio_type='global'):
         self.exchange = exchange
         self.symbol_type = symbol_type
         self.exchange_config = self.get_exchange_config()
+        self.long_short_ratio_type = long_short_ratio_type
       
     def get_exchange_config(self):
         file_name = f"{self.exchange}.json"
@@ -38,7 +39,9 @@ class ExchangeData:
     
     def get_suffix_funding_rate(self):
         return self.exchange_config[self.symbol_type]["suffix"]["funding_rate"]
-    
+
+    def get_suffix_long_short_ratio(self):
+        return self.exchange_config[self.symbol_type]["suffix"][self.long_short_ratio_type]
 
     # ==================== limit ==================== #
 
@@ -48,6 +51,8 @@ class ExchangeData:
     def get_limit_funding_rate(self):
         return self.exchange_config[self.symbol_type]["limit"]["funding_rate"]    
 
+    def get_limit_long_short_ratio(self):
+        return self.exchange_config[self.symbol_type]["limit"][self.long_short_ratio_type] 
 
     # ==================== response columns ==================== #
 
@@ -56,3 +61,6 @@ class ExchangeData:
 
     def get_columns_funding_rate(self):
         return self.exchange_config[self.symbol_type]["columns"]["funding_rate"]
+
+    def get_columns_long_short_ratio(self):
+        return self.exchange_config[self.symbol_type]["columns"][self.long_short_ratio_type]

@@ -24,14 +24,6 @@ params = {
     'symbol_li': [
         "BTC-USDT-SWAP",
         "ETH-USDT-SWAP",
-        "BNB-USDT-SWAP",
-        "SOL-USDT-SWAP",
-        "XRP-USDT-SWAP",
-        "ADA-USDT-SWAP",
-        "AVAX-USDT-SWAP",
-        "LINK-USDT-SWAP",
-        "DOT-USDT-SWAP",
-        "TRX-USDT-SWAP"
     ],
 }
 
