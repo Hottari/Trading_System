@@ -101,7 +101,7 @@ class BackTester():
 
 
     # performance
-    def perf_table(ret:pd.Series, annual_factor=252, is_compound=False, name='None'):
+    def perf_table(self, ret:pd.Series, annual_factor=252, is_compound=False, name='None'):
         
         ret_ts = ret.fillna(0).copy()    # incase error value compute
 
