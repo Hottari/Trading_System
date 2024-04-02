@@ -4,13 +4,13 @@ import os, sys
 import requests
 import time
 
-PROJECT_ROOT = os.path.join(os.path.dirname(__file__), '..', '..', '..')
-sys.path.insert(1, PROJECT_ROOT) 
+PROJECT_ROOT = '..'
+sys.path.extend([PROJECT_ROOT, '../..']) 
 from prepare_data import ExchangeData
 from message_manager import MessageManager
 message = MessageManager()
 
-class BinanceLoader(ExchangeData):
+class OKXLoader(ExchangeData):
 
     def __init__(self, exchange, symbol_type, timezone='Asia/Taipei'):
         super().__init__(exchange, symbol_type)
@@ -30,39 +30,44 @@ class BinanceLoader(ExchangeData):
             start_ts13,
             limit, 
             columns, 
-            need_col = ["datetime", "open", "high", "low", "close", "volume"],
+            need_col = ["datetime", "open", "high", "low", "close", "quote_asset_volume"],
             end_ts13 = None,
         ):
 
         """
         Mind
         - timezone = 'UTC'
-        - spot: see https://binance-docs.github.io/apidocs/spot/en/#kline-candlestick-data
-        - usd: see https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
-        - coin: see https://binance-docs.github.io/apidocs/delivery/en/#kline-candlestick-data
+        - spot, usd: see https://www.okx.com/docs-v5/en/?shell#order-book-trading-market-data-get-candlesticks-history
+        - coin: see 
         """
         item = 'ohlcv'
         data_li = []
         params = {
-            'symbol': symbol, 
-            'interval': freq, 
+            'instId': symbol, 
+            'bar': freq, 
             'limit':limit,
-            'endTime': end_ts13,
+            'after': end_ts13,
         }
         while True:
             message.fetching(item, symbol, start_time=pd.to_datetime(start_ts13, unit='ms').tz_localize('UTC'))
-            # timezone of binance is UTC+0
-            params['startTime'] = start_ts13  # update start_time
+            # timezone of okx is UTC+0
+            params['before'] = start_ts13  # update start_time
             data = requests.get(url, params=params).json()
-            data_li.extend(data) 
-            if len(data) < limit:
+            data_li.extend(data['data']) 
+            if len(data['data']) < limit:
                 break    
-            start_ts13 = data[-1][0] + 1
+            last = 0 
+            start_ts13 = int(data['data'][last][0]) + 1   # columns 0 is 'ts'
 
         # form dataframe
         if data_li: 
-            df = pd.DataFrame(data_li, columns=columns)[need_col].set_index(['datetime']).astype('float32').sort_index()
-            df.index = pd.to_datetime(df.index, unit='ms').tz_localize('UTC').tz_convert(self.timezone)
+            try:
+                df = pd.DataFrame(data_li, columns=columns)[need_col].set_index(['datetime']).astype('float64').sort_index()
+            except ValueError:
+                # Handle the numeric error
+                df = pd.DataFrame(data_li, columns=columns)[need_col].set_index(['datetime'])
+                df = df.apply(pd.to_numeric, errors='coerce').sort_index()
+            df.index = pd.to_datetime(df.index.astype(float), unit='ms').tz_localize('UTC').tz_convert(self.timezone)
             return df
         else: 
             return pd.DataFrame()
@@ -82,38 +87,38 @@ class BinanceLoader(ExchangeData):
         """
         Mind
         - timezone = 'UTC'
-        - usd: see https://binance-docs.github.io/apidocs/futures/en/#get-funding-rate-history
-        - coin: see https://binance-docs.github.io/apidocs/delivery/en/#get-funding-rate-history-of-perpetual-futures
+        - usd: see https://www.okx.com/docs-v5/en/?python#public-data-rest-api-get-funding-rate-history
         """
         item = 'funding_rate'
         data_li = []
         params = {
-            'symbol': symbol, 
+            'instId': symbol, 
             'limit':limit,
-            'endTime': end_ts13,
+            'after': end_ts13,
         }
         while True:
             message.fetching(item, symbol, start_time=pd.to_datetime(start_ts13, unit='ms').tz_localize('UTC'))
-            # timezone of binance is UTC+0
-            params['startTime'] = start_ts13                        # update start_time
+            # timezone of okx is UTC+0
+            params['before'] = start_ts13                        # update start_time
             data = requests.get(url, params=params).json()
-            data_li.extend(data) 
-            if len(data) < limit:
-                break    
-            start_ts13 = data[-1]['fundingTime'] + 1
+            data_li.extend(data['data']) 
+            if len(data['data']) < limit:
+                break
+            last = 0    # the order of okx is from current to past
+            start_ts13 = int(data['data'][last]['fundingTime']) + 1
 
         # form dataframe
         if data_li: 
             df = pd.DataFrame(data_li)
             df.columns = columns
-            df = df[need_col].set_index(['datetime']).astype('float32').sort_index()
-            df.index = pd.to_datetime(df.index, unit='ms').tz_localize('UTC').tz_convert(self.timezone)
+            df = df[need_col].set_index(['datetime']).astype('float64').sort_index()
+            df.index = pd.to_datetime(df.index.astype(float), unit='ms').tz_localize('UTC').tz_convert(self.timezone)
             return df
         else: 
             return pd.DataFrame()
 
 
-    def update_ohlcv(self, start:str, freq:str, symbol_li:list=None, end:str=None):
+    async def update_ohlcv(self, start:str, freq:str, symbol_li:list=None, end:str=None):
         """
         Update ohlcv for the given symbols.
 
@@ -218,7 +223,7 @@ class BinanceLoader(ExchangeData):
                     message.update_completed(item, symbol)
 
 
-    def update_funding_rate(self, start:str, symbol_li:list=None, end:str=None):
+    async def update_funding_rate(self, start:str, symbol_li:list=None, end:str=None):
         """
         Update funding rate for the given symbols.
 
@@ -312,6 +317,7 @@ class BinanceLoader(ExchangeData):
                     update_li.append(df_new_tail)
 
                 df_updated = pd.concat(update_li)
+                df_updated['funding_rate'] =pd.to_numeric(df_updated['funding_rate'], errors='coerce').astype('float64')
 
                 if df_updated.empty:
                     message.empty_warning(item, symbol) 

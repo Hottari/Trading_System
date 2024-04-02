@@ -8,6 +8,7 @@ sys.path.insert(1, PROJECT_ROOT)
 class ExchangeData:
     """
     binance: see https://binance-docs.github.io/apidocs/
+    okx: see https://www.okx.com/docs-v5/en/
     bybit: see https://bybit-exchange.github.io/docs/v5/intro
 
     """

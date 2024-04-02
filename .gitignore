@@ -13,3 +13,4 @@ test.ipynb
 # type
 *.csv
 *.pkl
+*.h5
