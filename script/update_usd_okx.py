@@ -20,7 +20,7 @@ params = {
     'timezone': 'UTC',
     'start': '2015-1-1',
     'end': None,
-    'freq': '15m',
+    'freq': '4H',
     'symbol_li': [
         "BTC-USDT-SWAP",
         "ETH-USDT-SWAP",

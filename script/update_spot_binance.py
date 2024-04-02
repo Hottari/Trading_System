@@ -1,36 +1,36 @@
 import asyncio
 import sys, os
 sys.path.extend(['..', '../..']) 
-from Data_Loader.api_connecter.okx_loader import OKXLoader
+from Data_Loader.api_connecter.binance_loader import BinanceLoader
 
 async def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_li=None):
-    ol = OKXLoader(exchange, symbol_type, timezone)
+    bl = BinanceLoader(exchange, symbol_type, timezone)
     
     # Create tasks for updating OHLCV and funding rate data
-    tasks = [ol.update_ohlcv(start=start, end=end, freq=freq, symbol_li=symbol_li),]
+    tasks = [bl.update_ohlcv(start=start, end=end, freq=freq, symbol_li=symbol_li),]
     
     # Run tasks concurrently
     await asyncio.gather(*tasks)
 
 
 params = {
-    'exchange': 'okx',
+    'exchange': 'binance',
     'symbol_type': 'spot',
     'timezone': 'UTC',
     'start': '2015-1-1',
     'end': None,
-    'freq': '4H',
+    'freq': '4h',
     'symbol_li': [
-        "BTC-USDT",
-        "ETH-USDT",
-        "BNB-USDT",
-        "SOL-USDT",
-        "XRP-USDT",
-        "ADA-USDT",
-        "AVAX-USDT",
-        "LINK-USDT",
-        "DOT-USDT",
-        "TRX-USDT"
+        "BTCUSDT",
+        "ETHUSDT",
+        "BNBUSDT",
+        "SOLUSDT",
+        "XRPUSDT",
+        "ADAUSDT",
+        "AVAXUSDT",
+        "LINKUSDT",
+        "DOTUSDT",
+        "TRXUSDT"
     ],
 }
 
