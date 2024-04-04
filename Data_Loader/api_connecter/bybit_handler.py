@@ -4,7 +4,7 @@ import sys, os
 sys.path.insert(1, os.path.expanduser(f'{os.path.dirname(__file__)}/../../'))
 from pybit.unified_trading import HTTP as _HTTP_V5
 
-class BybitRestClient:
+class BybitHandler:
     def __init__(self, api_key=None, api_secret=None, if_testnet=True):
         self._session_v5 = _HTTP_V5(
             testnet = if_testnet,

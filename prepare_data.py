@@ -43,6 +43,7 @@ class ExchangeData:
     def get_suffix_long_short_ratio(self):
         return self.exchange_config[self.symbol_type]["suffix"][self.long_short_ratio_type]
 
+
     # ==================== limit ==================== #
 
     def get_limit_kline(self):
@@ -53,6 +54,7 @@ class ExchangeData:
 
     def get_limit_long_short_ratio(self):
         return self.exchange_config[self.symbol_type]["limit"][self.long_short_ratio_type] 
+    
 
     # ==================== response columns ==================== #
 
@@ -64,3 +66,4 @@ class ExchangeData:
 
     def get_columns_long_short_ratio(self):
         return self.exchange_config[self.symbol_type]["columns"][self.long_short_ratio_type]
+    
