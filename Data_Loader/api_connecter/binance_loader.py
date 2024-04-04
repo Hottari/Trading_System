@@ -236,7 +236,7 @@ class BinanceLoader(ExchangeData):
                 if df_updated.empty:
                     message.empty_warning(item, symbol) 
                 else:
-                    df_updated.to_pickle(file_path)
+                    df_updated.sort_index().to_pickle(file_path)
                     message.donload_completed(item, symbol, file_path)
 
             # file exists and not empty
@@ -280,7 +280,7 @@ class BinanceLoader(ExchangeData):
                 if df_updated.empty:
                     message.empty_warning(item, symbol) 
                 else:
-                    df_updated.to_pickle(file_path)
+                    df_updated.sort_index().to_pickle(file_path)
                     message.update_completed(item, symbol)
 
 
@@ -339,7 +339,7 @@ class BinanceLoader(ExchangeData):
                 if df_updated.empty:
                     message.empty_warning(item, symbol) 
                 else:
-                    df_updated.to_pickle(file_path)
+                    df_updated.sort_index().to_pickle(file_path)
                     message.donload_completed(item, symbol, file_path)
 
             # file exists and not empty
@@ -378,12 +378,12 @@ class BinanceLoader(ExchangeData):
                     update_li.append(df_new_tail)
 
                 df_updated = pd.concat(update_li)
-                df_updated['funding_rate'] =pd.to_numeric(df_updated['funding_rate'], errors='coerce').astype('float64')
+                df_updated['funding_rate'] = pd.to_numeric(df_updated['funding_rate'], errors='coerce').astype('float64')
 
                 if df_updated.empty:
                     message.empty_warning(item, symbol) 
                 else:
-                    df_updated.to_pickle(file_path)
+                    df_updated.sort_index().to_pickle(file_path)
                     message.update_completed(item, symbol)
 
 
@@ -444,7 +444,7 @@ class BinanceLoader(ExchangeData):
                 if df_updated.empty:
                     message.empty_warning(item, symbol) 
                 else:
-                    df_updated.to_pickle(file_path)
+                    df_updated.sort_index().to_pickle(file_path)
                     message.donload_completed(item, symbol, file_path)
 
             # file exists and not empty
@@ -488,5 +488,5 @@ class BinanceLoader(ExchangeData):
                 if df_updated.empty:
                     message.empty_warning(item, symbol) 
                 else:
-                    df_updated.to_pickle(file_path)
+                    df_updated.sort_index().to_pickle(file_path)
                     message.update_completed(item, symbol)

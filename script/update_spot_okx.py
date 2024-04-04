@@ -4,7 +4,11 @@ sys.path.extend(['..', '../..'])
 from Data_Loader.api_connecter.okx_loader import OKXLoader
 
 async def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_li=None):
-    ol = OKXLoader(exchange, symbol_type, timezone)
+    ol = OKXLoader(
+        exchange = exchange, 
+        symbol_type = symbol_type, 
+        timezone = timezone
+    )
     
     # Create tasks for updating OHLCV and funding rate data
     tasks = [ol.update_ohlcv(start=start, end=end, freq=freq, symbol_li=symbol_li),]

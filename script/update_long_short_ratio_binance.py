@@ -21,7 +21,7 @@ async def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_
 
 params = {
     'exchange': 'binance',
-    'symbol_type': 'long_short_ratio',
+    'symbol_type': 'usd',
     'timezone': 'UTC',
     'start': '2024-3-4',                    # only 30days data (earlier will fail)
     'end': None,
