@@ -79,7 +79,7 @@ class PerfPlot():
 
     def plot_mdd(self, df_equity: pd.DataFrame, equity_name: str, separate_date: str = None, is_ret: bool = True):
         equity = df_equity.copy()
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 3), sharex=True)
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 4), sharex=True)
 
         # Remove space between subplots
         plt.subplots_adjust(hspace=0)

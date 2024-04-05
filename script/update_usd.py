@@ -34,19 +34,19 @@ params = {
     'timezone': 'UTC',
     'start': '2010-1-1',
     'end': None,
-    'freq': '1h',
-    # 'symbol_li': [
-    #     "BTCUSDT",
-    #     "ETHUSDT",
-    #     "BNBUSDT",
-    #     "SOLUSDT",
-    #     "XRPUSDT",
-    #     "ADAUSDT",
-    #     "AVAXUSDT",
-    #     "LINKUSDT",
-    #     "DOTUSDT",
-    #     "TRXUSDT"
-    # ],
+    'freq': '1m',
+    'symbol_li': [
+        "BTCUSDT",
+        "ETHUSDT",
+        "BNBUSDT",
+        "SOLUSDT",
+        "XRPUSDT",
+        "ADAUSDT",
+        "AVAXUSDT",
+        "LINKUSDT",
+        "DOTUSDT",
+        "TRXUSDT"
+    ],
 }
 
 asyncio.run(update_data(**params))
