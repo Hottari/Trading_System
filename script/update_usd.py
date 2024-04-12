@@ -34,7 +34,7 @@ params = {
     'timezone': 'UTC',
     'start': '2010-1-1',
     'end': None,
-    'freq': '1m',
+    'freq': '1h',
     'symbol_li': [
         "BTCUSDT",
         "ETHUSDT",
