@@ -163,7 +163,7 @@ class BackTester():
             
             'Total_Return(%)': total_return*100,
             'CAGR(%)': cagr*100,
-            'Annnal_Sharpe': annual_sharpe,
+            'Annual_Sharpe': annual_sharpe,
             'Annual_Vol': annual_vol,
 
             'MDD(%)': -mdd*100,

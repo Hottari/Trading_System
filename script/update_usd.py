@@ -35,18 +35,18 @@ params = {
     'start': '2010-1-1',
     'end': None,
     'freq': '1h',
-    'symbol_li': [
-        "BTCUSDT",
-        "ETHUSDT",
-        "BNBUSDT",
-        "SOLUSDT",
-        "XRPUSDT",
-        "ADAUSDT",
-        "AVAXUSDT",
-        "LINKUSDT",
-        "DOTUSDT",
-        "TRXUSDT"
-    ],
+    # 'symbol_li': [
+    #     "BTCUSDT",
+    #     "ETHUSDT",
+    #     "BNBUSDT",
+    #     "SOLUSDT",
+    #     "XRPUSDT",
+    #     "ADAUSDT",
+    #     "AVAXUSDT",
+    #     "LINKUSDT",
+    #     "DOTUSDT",
+    #     "TRXUSDT"
+    # ],
 }
 
 asyncio.run(update_data(**params))
