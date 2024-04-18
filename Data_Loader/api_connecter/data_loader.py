@@ -116,7 +116,7 @@ class DataLoader(ExchangeData):
         
         symbol_amount = len(symbol_li)
         for symbol in symbol_li:
-            await asyncio.sleep(0.8)                        # avoid hitting request rate limit
+            await asyncio.sleep(3)                        # avoid hitting request rate limit
             message.updating(item, symbol_li.index(symbol)+1, symbol_amount)
             file_path = os.path.join(save_dir, f"{symbol}_{item}.pkl")
             df_ori = pd.read_pickle(file_path) if os.path.isfile(file_path) else pd.DataFrame()
