@@ -14,3 +14,4 @@ test.ipynb
 *.csv
 *.pkl
 *.h5
+*.parquet

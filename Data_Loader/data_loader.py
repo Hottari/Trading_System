@@ -10,6 +10,29 @@ from prepare_data import ExchangeData
 from message_manager import MessageManager
 message = MessageManager()
 
+
+class DBLoader():
+    def __init__(self):
+        pass
+
+    def get_db_df(
+            self, 
+            collection_name, db, db_name=None, 
+            need_col=None, query_dict=None, sort_name=None,
+            limit=0,
+        ):
+        collection = db[db_name][collection_name] if db_name else db[collection_name]
+        # filter
+        projection_dict = {'_id': 0}
+        projection_dict.update({col: 1 for col in need_col}) if need_col else None
+        query = collection.find(query_dict, projection_dict)
+        # sort
+        query = query.sort(sort_name, -1) if sort_name else query
+        data = query.limit(limit)
+        df = pd.DataFrame(list(data))
+        return df
+
+
 class DataLoader(ExchangeData):
 
     def __init__(

@@ -1,7 +1,11 @@
 import pandas as pd
 import numpy as np
 import os, sys
-import requests, time, aiohttp
+import aiohttp
+
+from binance.um_futures import UMFutures
+from binance.error import ClientError
+from datetime import datetime
 
 PROJECT_ROOT = '..'
 sys.path.extend([PROJECT_ROOT, '../..']) 
@@ -22,6 +26,33 @@ class BinanceHandler():
             return df.sort_index()
         else: 
             return pd.DataFrame()
+
+
+    def fetch_all_trades(
+            self, 
+            symbol, api_key, api_secret, 
+            start_ts13, end_ts13=pd.to_datetime(datetime.now()).value // 10**6, 
+            interval_limit = 60*60*24*7 * 1000,             # binance 7 days limit to fetch trades
+            limit = 1000, recvWindow = 1000000,             # https://binance-docs.github.io/apidocs/futures/en/#signed-trade-and-user_data-endpoint-security
+            )->list:
+        all_trades = []
+        while start_ts13 < end_ts13:
+            client = UMFutures(
+                key = api_key,
+                secret = api_secret,
+            )
+            try:
+                response = client.get_account_trades(
+                    limit = limit, recvWindow = recvWindow,
+                    symbol = symbol, 
+                    startTime = start_ts13,
+                )
+                all_trades.extend(response)
+            except ClientError as error:
+                print(f"Error status:{error.status_code}, code:{error.error_code}, message:{error.error_message}")
+            start_ts13 = min(start_ts13+interval_limit, end_ts13) + 1
+        return all_trades
+
 
 
     async def fetch_ohlcv(
