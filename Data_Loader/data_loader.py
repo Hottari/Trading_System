@@ -34,7 +34,6 @@ class DBLoader():
 
 
 class DataLoader(ExchangeData):
-
     def __init__(
             self, 
             exchange, symbol_type, start, end=None, timezone='Asia/Taipei',

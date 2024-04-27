@@ -6,7 +6,7 @@ from datetime import datetime
 
 PROJECT_ROOT = os.path.dirname(os.getcwd())
 sys.path.extend([PROJECT_ROOT, '..', '../..']) 
-from Data_Loader.api_connecter.data_loader import DataLoader
+from Data_Loader.data_loader import DataLoader
 
 async def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_li=None):
     loader = DataLoader(

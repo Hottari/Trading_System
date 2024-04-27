@@ -117,6 +117,7 @@ class PerfPlot():
         fig.legend(loc="upper right")
         ax1.set_ylabel(f"{equity_name}")
         ax2.set_xlabel('Date')
+        plt.xticks(rotation=45)
         plt.suptitle(f'Profit & Drawdown of {equity_name}', fontsize=16)
         plt.show()
 
