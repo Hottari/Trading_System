@@ -186,15 +186,20 @@ class BackTester():
     
 
     def get_rolling_perf(self, ret, year=1, lev=1, start_year=2020, end_year=2024, annual_factor=252, is_compound=True):
-        for i in range(start_year, end_year-year+2):
-            display(self.perf_table(
+        df = pd.concat([
+            self.perf_table(
                 (ret[str(i):str(i+year-1)])*lev, 
                 annual_factor=annual_factor, 
                 is_compound=is_compound, 
                 name = f'{i}~{i+year-1}'
-            ).round(3))
-
-        display(self.perf_table(
-            (ret[f"{start_year}-1-1":f"{end_year}-12-31"]*lev), 
-            annual_factor=annual_factor, is_compound=is_compound, name='whole'
-        ))
+            ) for i in range(start_year, end_year-year+2)
+        ], axis='rows')
+        
+        df = pd.concat([
+            df,
+            self.perf_table(
+                (ret[f"{start_year}-1-1":f"{end_year}-12-31"]*lev), 
+                annual_factor=annual_factor, is_compound=is_compound, name='whole'
+            )
+        ], axis='rows').round(3).set_index('name') 
+        display(df)
