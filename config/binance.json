@@ -56,6 +56,7 @@
         "end_point": "https://fapi.binance.com",
         
         "suffix": {
+            "exchange_info": "/fapi/v1/exchangeInfo",
             "global": "/futures/data/globalLongShortAccountRatio",
             "top_account": "/futures/data/topLongShortAccountRatio",
             "top_position": "/futures/data/topLongShortPositionRatio"

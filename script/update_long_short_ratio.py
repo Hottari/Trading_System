@@ -1,36 +1,49 @@
 import asyncio
 import sys, os
-sys.path.extend(['..', '../..']) 
-from Data_Loader.api_connecter.binance_loader import BinanceLoader
 
-async def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_li=None):
-    bl_global = BinanceLoader(exchange, symbol_type, 'global', timezone)
-    bl_top_account = BinanceLoader(exchange, symbol_type, 'top_account', timezone)
-    bl_top_position = BinanceLoader(exchange, symbol_type, 'top_position', timezone)
-    
-    # Create tasks for updating OHLCV and funding rate data
+import time
+from datetime import datetime
+
+PROJECT_ROOT = os.path.dirname(os.getcwd())
+sys.path.extend([PROJECT_ROOT, '..', '../..']) 
+from Data_Loader.data_loader import DataLoader
+
+async def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_li=None, long_short_ratio_type='global'):
+    loader = DataLoader(
+        exchange = exchange, 
+        symbol_type = symbol_type, 
+        start = start,
+        end = end,
+        timezone = timezone,
+        long_short_ratio_type = long_short_ratio_type,
+    )
+    save_dir_lsr = os.path.join(PROJECT_ROOT, 'data_base', exchange, 'usd', 'long_short_ratio', long_short_ratio_type, freq)
     tasks = [
-        bl_global.update_long_short_ratio(start=start, end=end, freq=freq, symbol_li=symbol_li),
-        bl_top_account.update_long_short_ratio(start=start, end=end, freq=freq, symbol_li=symbol_li),
-        bl_top_position.update_long_short_ratio(start=start, end=end, freq=freq, symbol_li=symbol_li),
+        loader.do_fetch_update(save_dir=save_dir_lsr, item='long_short_ratio', freq=freq, symbol_li=symbol_li),
     ]
-    
-    # Run tasks concurrently
     await asyncio.gather(*tasks)
-
 
 params = {
     'exchange': 'binance',
-    'symbol_type': 'usd',
+    'symbol_type': 'long_short_ratio',
     'timezone': 'UTC',
-    'start': '2024-3-4',                    # only 30days data (earlier will fail)
+    'start': '2024-4-1',                # only 30 days data, earily will fail
     'end': None,
-    'freq': '15m',
-    'symbol_li': [
-        "BTCUSDT",
-    ],
+    'freq': '1h',
+    # 'symbol_li': [
+    #     "BTCUSDT",
+    #     "ETHUSDT",
+    #     "BNBUSDT",
+    #     "SOLUSDT",
+    #     "XRPUSDT",
+    #     "ADAUSDT",
+    #     "AVAXUSDT",
+    #     "LINKUSDT",
+    #     "DOTUSDT",
+    #     "TRXUSDT"
+    # ],
 }
-
-# Run the async function
-asyncio.run(update_data(**params))
+for long_short_ratio_type in ['top_account', 'top_position']: #['global', 'top_account', 'top_position']:
+    params['long_short_ratio_type'] = long_short_ratio_type
+    asyncio.run(update_data(**params))
 

@@ -13,7 +13,7 @@ class ExchangeData:
 
     """
 
-    def __init__(self, exchange, symbol_type, long_short_ratio_type='global'):
+    def __init__(self, exchange, symbol_type, long_short_ratio_type=None):
         self.exchange = exchange
         self.symbol_type = symbol_type
         self.exchange_config = self.get_exchange_config()

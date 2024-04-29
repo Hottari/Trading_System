@@ -17,17 +17,17 @@ async def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_
         timezone = timezone,
     )
     save_dir_ohlcv = os.path.join(PROJECT_ROOT, 'data_base', exchange, symbol_type, 'ohlcv', freq)
-    save_dir_fr = os.path.join(PROJECT_ROOT, 'data_base', exchange, symbol_type, 'funding_rate')
+
     tasks = [
         loader.do_fetch_update(save_dir=save_dir_ohlcv, item='ohlcv', symbol_li=symbol_li, freq=freq),
-        loader.do_fetch_update(save_dir=save_dir_fr, item='funding_rate', symbol_li=symbol_li),
     ]
     # Run tasks concurrently
     await asyncio.gather(*tasks)
 
+
 params = {
     'exchange': 'binance',
-    'symbol_type': 'usd',
+    'symbol_type': 'spot',
     'timezone': 'UTC',
     'start': '2010-1-1',
     'end': None,
@@ -45,5 +45,6 @@ params = {
     #     "TRXUSDT"
     # ],
 }
+
 asyncio.run(update_data(**params))
 
