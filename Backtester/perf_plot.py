@@ -10,6 +10,15 @@ import plotly.offline as pyo
 from itertools import cycle
 
 
+import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+import cufflinks as cf
+cf.go_offline()
+
+from plotly.subplots import make_subplots
+
+
+
 class PerfPlot():
 
     def __init__(self):
@@ -75,6 +84,32 @@ class PerfPlot():
         # Print the path to the HTML file
         print(f"Interactive plot saved to: {os.path.join(os.getcwd(), html_file_path)}")
 
+
+    def plot_mdd_plotly(self, df, data_name, title=None, is_ret=True, is_save=False):
+
+        if is_ret:
+            df['drawdown'] = (df[data_name]+1) / (np.maximum(0, df[data_name].cummax())+1) - 1
+        else:
+            df['drawdown'] = df[data_name] - df[data_name].cummax()    
+
+        peak_index = df[df[data_name].cummax() == df[data_name]].index
+        peak_values = df[data_name].loc[peak_index]
+
+        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, subplot_titles=('Equity', 'Drawdown'), vertical_spacing=0.1)
+
+        # Add traces
+        fig.add_trace(go.Scatter(x=df.index, y=df['ret'], name='Equity', line=dict(color='gray')), row=1, col=1)
+        fig.add_trace(go.Scatter(x=peak_index, y=peak_values, mode='markers', name='New High', marker=dict(color='#02ff0f')), row=1, col=1)
+        fig.add_trace(go.Scatter(x=df.index, y=df['drawdown'], name='Drawdown', fill='tozeroy', fillcolor='rgba(255,0,0,0.3)', marker=dict(color='rgba(0,0,0,0)')), row=2, col=1)
+
+        # Update layout
+        fig.update_layout(
+            height = 600, width = 1000, 
+            title_text = title,
+            title_font = dict(size = 18)
+        )
+        fig.show()
+        pyo.plot(fig, filename=title, auto_open=False) if is_save else None
 
 
     def plot_mdd(self, df_equity: pd.DataFrame, equity_name: str, separate_date: str = None, is_ret: bool = True):
