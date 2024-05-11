@@ -7,6 +7,18 @@ class BackTester():
         pass
 
     def get_daily_ret(self, ret):
+        """
+        轉換日內報酬為日報酬
+
+        Args:
+            ret (pd.Series): return time series
+
+        Return:
+            pd.Series: 日報酬
+
+        Example:
+            get_daily_ret(ret)
+        """
         df = ret.copy()
         return (1 + df).resample('D').prod() - 1
 
@@ -56,7 +68,7 @@ class BackTester():
         return result
 
 
-    def ret_from_signal(self, df:pd.DataFrame, is_long:bool=True, is_short:bool=True)-> dict: 
+    def get_ret_from_signal(self, df:pd.DataFrame, is_long:bool=True, is_short:bool=True)-> dict: 
         """
         分別讀取多空進出場訊號來計算多空報酬
 
@@ -102,11 +114,62 @@ class BackTester():
             'strategy_ret_short_arr': strategy_ret_short_arr,
         }
         return result
+    
+
+    def get_ret_after_fric(
+            self, 
+            rets, weights, 
+            fr=0, fee_rate_in=0.001425*0.7, fee_rate_out=0.001425*0.3+0.003, slip_rate=0, 
+            signal_delay_periods=0,
+    ):
+        """
+        計算摩擦後報酬
+
+        Args:
+            rets (pd.DataFrame): 標的報酬
+            weights (pd.DataFrame): 部位權重訊號
+
+        Return:
+            pd.DataFrame: 摩擦後報酬
+
+        Example:
+            get_ret_after_fric(rets, weights)
+        """
+        # ret_after_fric
+        weight_change = weights.diff().shift(signal_delay_periods).fillna(0)
+        weights_ret_happen = weights.shift(signal_delay_periods+1).fillna(0)
+        ret_weighted = weights_ret_happen * rets
+        # t=0 生訊號, 立即進場生摩擦
+        # t=1 生報酬
+
+        ret_to_fric_adjust = weights_ret_happen.where(weights_ret_happen==0, weights_ret_happen/weights_ret_happen) * rets  # 有產生報酬才需要對摩擦損失做報酬調整 
+
+        fr_loss = weights_ret_happen * fr * (1+ret_to_fric_adjust)                                                          # ret 計在下期
+        fee_loss_in = ( weight_change[weight_change>0] * ( fee_rate_in * ( 1+ret_to_fric_adjust ) ) ).fillna(0)             # fee 計在轉倉當下
+        fee_loss_out = -( weight_change[weight_change<0] * ( fee_rate_out * ( 1+ret_to_fric_adjust ) ) ).fillna(0)
+        slip_lose = np.abs(weight_change) * ( slip_rate * ( 1+ret_to_fric_adjust ) )                                        # slippage 計在轉倉當下
+        
+        ret_after_fric = ret_weighted - fr_loss - fee_loss_in - fee_loss_out - slip_lose
+        return ret_after_fric
 
 
     # performance
     def perf_table(self, ret:pd.Series, annual_factor=252, is_compound=False, name='None'):
-        
+        """
+        Get Performance Table
+
+        Args:
+            ret (pd.Series): return time series
+            annual_factor (float): annual periods
+            is_compound (bool): if compound return
+            name (str): strategy name
+
+        Return:
+            pd.DataFrame: Performance Table
+
+        Example:
+            perf_table(ret, annual_factor=252, is_compound=True, name='strategy')
+        """        
         ret_ts = ret.fillna(0).copy()    # incase error value compute
         if is_compound: 
             ret_cum = (1 + ret).cumprod() -1    
@@ -185,7 +248,30 @@ class BackTester():
         return pd.DataFrame([perf_dict])
     
 
-    def get_rolling_perf(self, ret, year=1, lev=1, start_year=2020, end_year=2024, annual_factor=252, is_compound=True):
+    def get_rolling_perf(
+            self, 
+            ret,  lev=1, 
+            year=1, start_year=2020, end_year=2024, 
+            annual_factor=252, is_compound=True,
+        ):
+        """
+        Get Rolling Performance Table
+
+        Args:
+            ret (pd.Series): return time series
+            lev (float): leverage
+            year (int): rolling year(s)
+            start_year (int): start year
+            end_year (int): end year
+            annual_factor (float): annual periods
+            is_compound (bool): if compound return
+
+        Return:
+            pd.DataFrame: Rolling Performance Table
+
+        Example:
+            get_rolling_perf(ret, lev=1, year=1, start_year=2020, end_year=2024, annual_factor=252, is_compound=True)
+        """         
         df = pd.concat([
             self.perf_table(
                 (ret[str(i):str(i+year-1)])*lev, 
@@ -202,4 +288,6 @@ class BackTester():
                 annual_factor=annual_factor, is_compound=is_compound, name='whole'
             )
         ], axis='rows').round(3).set_index('name') 
-        display(df)
+        return df
+
+
