@@ -123,14 +123,14 @@ class BackTester():
             signal_delay_periods=0,
     ):
         """
-        計算摩擦後報酬
+        Get Return After Friction
 
         Args:
-            rets (pd.DataFrame): 標的報酬
-            weights (pd.DataFrame): 部位權重訊號
+            rets (pd.DataFrame): return DataFrame with datetime index and symbol columns
+            weights (pd.DataFrame): weighting DataFrame with datetime index and symbol columns
 
         Return:
-            pd.DataFrame: 摩擦後報酬
+            pd.DataFrame: return after friction DataFrame with datetime index and symbol columns
 
         Example:
             get_ret_after_fric(rets, weights)
