@@ -154,7 +154,7 @@ class BackTester():
 
 
     # performance
-    def perf_table(self, ret:pd.Series, annual_factor=252, is_compound=False, name='None'):
+    def perf_table(self, ret:pd.Series, annual_factor=252, is_compound=True, name='None'):
         """
         Get Performance Table
 
