@@ -98,7 +98,7 @@ class PerfPlot():
         fig = make_subplots(rows=2, cols=1, shared_xaxes=True, subplot_titles=('Equity', 'Drawdown'), vertical_spacing=0.1)
 
         # Add traces
-        fig.add_trace(go.Scatter(x=df.index, y=df['ret'], name='Equity', line=dict(color='gray')), row=1, col=1)
+        fig.add_trace(go.Scatter(x=df.index, y=df[data_name], name='Equity', line=dict(color='gray')), row=1, col=1)
         fig.add_trace(go.Scatter(x=peak_index, y=peak_values, mode='markers', name='New High', marker=dict(color='#02ff0f')), row=1, col=1)
         fig.add_trace(go.Scatter(x=df.index, y=df['drawdown'], name='Drawdown', fill='tozeroy', fillcolor='rgba(255,0,0,0.3)', marker=dict(color='rgba(0,0,0,0)')), row=2, col=1)
 
