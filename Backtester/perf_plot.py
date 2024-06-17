@@ -24,7 +24,7 @@ class PerfPlot():
     def __init__(self):
         pass
 
-    # Plot
+    # ================== Data Attributes ==================
     def plot_distribution(self, data:np.ndarray, data_name:str='', bins:int=100):
         """
         plot data distribution
@@ -48,7 +48,7 @@ class PerfPlot():
         plt.show()
 
 
-
+    # ================== Performance Metrics ==================
     def plot_interactive_line(self, df:pd.DataFrame, x:str, y:list, title:str='Interactive_Plot'):
         """
         plot interactive figure
@@ -85,23 +85,27 @@ class PerfPlot():
         print(f"Interactive plot saved to: {os.path.join(os.getcwd(), html_file_path)}")
 
 
-    def plot_mdd_plotly(self, df, data_name, title=None, is_ret=True, is_save=False):
-
+    def plot_mdd_plotly(self, df, data_name, title=None, is_ret=True, is_save=False, separate_date=None):
         if is_ret:
             df['drawdown'] = (df[data_name]+1) / (np.maximum(0, df[data_name].cummax())+1) - 1
         else:
             df['drawdown'] = df[data_name] - df[data_name].cummax()    
-
         peak_index = df[df[data_name].cummax() == df[data_name]].index
         peak_values = df[data_name].loc[peak_index]
-
         fig = make_subplots(rows=2, cols=1, shared_xaxes=True, subplot_titles=('Equity', 'Drawdown'), vertical_spacing=0.1)
-
         # Add traces
         fig.add_trace(go.Scatter(x=df.index, y=df[data_name], name='Equity', line=dict(color='gray')), row=1, col=1)
         fig.add_trace(go.Scatter(x=peak_index, y=peak_values, mode='markers', name='New High', marker=dict(color='#02ff0f')), row=1, col=1)
         fig.add_trace(go.Scatter(x=df.index, y=df['drawdown'], name='Drawdown', fill='tozeroy', fillcolor='rgba(255,0,0,0.3)', marker=dict(color='rgba(0,0,0,0)')), row=2, col=1)
-
+        # Add vertical line
+        if separate_date!=None:
+            fig.add_shape(
+                type = "line",
+                x0 = pd.to_datetime(separate_date).strftime('%Y-%m-%d'), y0=0,
+                x1 = pd.to_datetime(separate_date).strftime('%Y-%m-%d'), y1=1,
+                yref = 'paper',                                     # refers to the entire plotting area
+                line = dict(color=f"rgba(0, 32, 91, {0.5})", width=2, dash="dash")    # or dashdot
+            )          
         # Update layout
         fig.update_layout(
             height = 600, width = 1000, 
@@ -159,16 +163,13 @@ class PerfPlot():
 
 
     def plot_monthly_ret(self, monthly_return_df):
-
         df = monthly_return_df
         # Extract years and months
         df['Year'] = df['Date'].dt.year
         df['Month'] = df['Date'].dt.month_name()
-
         # Pivot the table for heatmap
         pivot_table = df.pivot(index="Month", columns="Year", values="Return")
         pivot_table *= 100  # Multiplying the returns by 100
-
         # Reorder pivot_table index to match the calendar months orde
         months_order = [
             'January', 'February', 'March', 'April', 'May', 'June',
@@ -192,17 +193,45 @@ class PerfPlot():
         plt.xticks(rotation=45)
         plt.show()
 
+
+    # ================== Real Trading Tracker ==================
+    def plot_track_result_plotly(self, lev, df_bal_real, portfolio_name, ret_bt, start, end, timeframe='8h'):
+        df_ret = pd.DataFrame({'backtest':ret_bt[start:end]})
+        df_ret['real'] = ((df_bal_real[df_bal_real['portfolio'] == portfolio_name]['return'][start:]+1).resample(timeframe).prod()-1).shift(1)
+        df_ret = df_ret.iloc[1:]
+        df_ret["Real-Backtest"] = df_ret['real']-df_ret['backtest']*lev
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        fig.add_trace(go.Scatter(x=df_ret.index, y=(1+df_ret['backtest']*lev).cumprod()-1, mode='lines+markers', name='backtest', line=dict(color='blue', dash='dash')), secondary_y=False)
+        fig.add_trace(go.Scatter(x=df_ret.index, y=(1+df_ret['real']).cumprod()-1, mode='lines+markers', name='real', line=dict(color='orange')), secondary_y=False)
+        fig.add_trace(go.Scatter(x=df_ret.index, y=df_ret["Real-Backtest"], mode='markers', name='real-backtest', marker=dict(color='green', size=10, opacity=0.5)), secondary_y=True)
+
+        # Get the minimum and maximum for each dataset
+        y1 = (1+df_ret['backtest']*lev).cumprod()-1
+        y2 = df_ret["Real-Backtest"]
+        max_y1 = y1.max()
+        min_y1 = y1.min()
+        max_y2 = y2.max()
+        min_y2 = y2.min()
+        adj_scale_y1 = (max_y1 - min_y1) / 10
+
+        # Calculate the scale factor between the two datasets
+        scale = (max_y1 - min_y1) / (max_y2 - min_y2)
+        fig.update_yaxes(title_text="Cumulative Returns", range=[min_y1-adj_scale_y1, max_y1+adj_scale_y1], secondary_y=False)
+        fig.update_yaxes(title_text="Real-Backtest", range=[(min_y1-adj_scale_y1) / scale, (max_y1+adj_scale_y1) / scale], secondary_y=True)
+
+        # Add horizontal line at y=0 on second y-axis
+        fig.add_shape(type="line", line=dict(dash='dash'), x0=df_ret.index.min(), x1=df_ret.index.max(), y0=0, y1=0, secondary_y=True)
+        fig.update_layout(height=450, width=900, title_text=f"Track Result ( {portfolio_name} )")
+        fig.show()
+
     
     def plot_river_chart(self, df_data, figure_width=1200, figure_height=600):
         df = df_data.copy()
-
         # Select a Plotly Express built-in color sequence
         color_palette = px.colors.qualitative.Set1  # Example color palette
         color_cycle = cycle(color_palette)  # Create a cycle iterator for the color palette
-
         # Initialize the figure with specified layout dimensions
         fig = go.Figure()
-
         # Add each asset as a trace with a unique color from the cycle
         for item in df.columns:
             fig.add_trace(go.Scatter(
@@ -215,14 +244,9 @@ class PerfPlot():
                 groupnorm='percent',  # Normalize to percentage for full area coverage
                 name=item
             ))
-
         # Update the layout with axis labels, title settings, and figure dimensions
         fig.update_layout(
             showlegend=True,
-            # xaxis=dict(
-            #     title='Date',  # X-axis label
-            #     type='date'
-            # ),
             yaxis=dict(
                 title='Asset Weight',  # Y-axis label
                 type='linear',
