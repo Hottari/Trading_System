@@ -15,7 +15,8 @@
             },
             "datetime_type": ["目前狀態", "上市日", "下市日"],
             "string_type": ["代碼", "名稱(中文)", "市場別"],
-            "sort": ["目前狀態", "代碼"]
+            "sort": ["目前狀態", "代碼"],
+            "duplicate": []
         },
         "params_name":{
             "datetime": "mdate"
@@ -38,7 +39,8 @@
             },
             "datetime_type": ["目前狀態", "上市日", "下市日"],
             "string_type": ["代碼", "TSE產業名", "名稱(中文)", "市場別", "證券種類代碼", "證券種類名稱"],
-            "sort": ["目前狀態", "代碼"]
+            "sort": ["目前狀態", "代碼"],
+            "duplicate": []
         },
         "params_name":{
             "datetime": "mdate"
@@ -64,7 +66,8 @@
             },
             "datetime_type": ["datetime"],
             "string_type": ["symbol"],
-            "sort": ["datetime", "symbol"]
+            "sort": ["datetime", "symbol"],
+            "duplicate": []
         },
         "params_name":{
             "datetime": "mdate"
@@ -90,7 +93,8 @@
             },
             "datetime_type": ["datetime"],
             "string_type": ["symbol"],
-            "sort": ["datetime", "symbol"]
+            "sort": ["datetime", "symbol"],
+            "duplicate": []
         },
         "params_name":{
             "datetime": "mdate"
@@ -111,7 +115,8 @@
             },
             "datetime_type": ["datetime"],
             "string_type": ["symbol"],
-            "sort": ["datetime", "symbol"]
+            "sort": ["datetime", "symbol"],
+            "duplicate": []
         },
         "params_name":{
             "datetime": "mdate"
@@ -141,7 +146,8 @@
             },
             "datetime_type": ["datetime"],
             "string_type": ["symbol"],
-            "sort": ["datetime", "symbol"]
+            "sort": ["datetime", "symbol"],
+            "duplicate": []
         },
         "params_name":{
             "datetime": "mdate"
@@ -173,7 +179,8 @@
             },
             "datetime_type": ["datetime"],
             "string_type": ["symbol"],
-            "sort": ["datetime", "symbol"]
+            "sort": ["datetime", "symbol"],
+            "duplicate": []
         },
         "params_name":{
             "datetime": "mdate"
@@ -308,7 +315,8 @@
             },
             "datetime_type": ["datetime", "到期月"],
             "string_type": ["symbol", "標的現貨代碼", "標的現貨名稱"],
-            "sort": ["datetime", "symbol", "到期月"]
+            "sort": ["datetime", "symbol", "到期月"],
+            "duplicate": []
         },
         "params_name":{
             "datetime": "mdate"
@@ -330,7 +338,8 @@
             },
             "datetime_type": ["datetime"],
             "string_type": ["index_symbol", "成份股"],
-            "sort": ["datetime", "index_symbol", "成份股"]
+            "sort": ["datetime", "index_symbol", "成份股"],
+            "duplicate": []
         },
         "params_name":{
             "datetime": "mdate"
