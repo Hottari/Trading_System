@@ -1,0 +1,79 @@
+{
+    "exchange": "binance",
+
+    "spot":{
+        "end_point": "https://api.binance.com",
+
+        "suffix": {
+            "exchange_info": "/api/v3/exchangeInfo",
+            "kline": "/api/v3/klines"
+        },
+
+        "limit": {
+            "kline": 1000
+        },
+
+        "columns": {
+            "kline": [
+                "datetime", "open", "high", "low", "close", "volume", "close_time", 
+                "quote_asset_volume", "number_of_trades", "taker_buy_base_asset_volume", "taker_buy_quote_asset_volume", 
+                "ignore"
+            ]
+        }
+    },
+
+    "usd":{
+        "end_point": "https://fapi.binance.com",
+        
+        "suffix": {
+            "exchange_info": "/fapi/v1/exchangeInfo",
+            "kline": "/fapi/v1/klines",
+            "funding_rate": "/fapi/v1/fundingRate"
+        },
+
+        "limit": {
+            "kline": 1500,
+            "funding_rate": 1000
+        },
+
+        "columns": {
+            "kline": [
+                "datetime", "open", "high", "low", "close", "volume", "close_time", 
+                "quote_asset_volume", "number_of_trades", "taker_buy_base_asset_volume", "taker_buy_quote_asset_volume", 
+                "ignore"
+            ],
+            "funding_rate": ["symbol", "datetime", "funding_rate", "mark_price"]
+        }
+        
+    },
+
+    "coin":{
+        "end_point": "https://dapi.binance.com"
+    },
+
+
+    "long_short_ratio":{
+        "end_point": "https://fapi.binance.com",
+        
+        "suffix": {
+            "exchange_info": "/fapi/v1/exchangeInfo",
+            "global": "/futures/data/globalLongShortAccountRatio",
+            "top_account": "/futures/data/topLongShortAccountRatio",
+            "top_position": "/futures/data/topLongShortPositionRatio"
+        },
+
+        "limit": {
+            "global": 500,
+            "top_account": 500,
+            "top_position": 500
+        },
+
+        "columns": {
+            "global": ["symbol", "long_short_ratio", "long_account", "short_account",  "datetime"],
+            "top_account": ["symbol", "long_short_ratio", "long_account", "short_account",  "datetime"],
+            "top_position": ["symbol", "long_short_ratio", "long_account", "short_account",  "datetime"]
+        }
+        
+    }
+
+}

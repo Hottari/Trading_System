@@ -1,0 +1,51 @@
+{
+    "exchange": "okx",
+
+    "spot":{
+        "end_point": "https://www.okex.com",
+
+        "suffix": {
+            "exchange_info": "/api/v5/public/instruments",
+            "kline": "/api/v5/market/history-candles"
+        },
+
+        "limit": {
+            "kline": 100
+        },
+
+        "columns": {
+            "kline": [
+                "datetime", "open", "high", "low", "close", "volume", "volCcy", "quote_asset_volume", 
+                "confirm"
+            ]
+        }
+    },
+
+    "usd":{
+        "end_point": "https://www.okex.com",
+        
+        "suffix": {
+            "exchange_info": "/api/v5/public/instruments",
+            "kline": "/api/v5/market/history-candles",
+            "funding_rate": "/api/v5/public/funding-rate-history"
+        },
+
+        "limit": {
+            "kline": 100,
+            "funding_rate": 100
+        },
+
+        "columns": {
+            "kline": [
+                "datetime", "open", "high", "low", "close", "volume", "volCcy", "quote_asset_volume", 
+                "confirm"
+            ],
+            "funding_rate": ["funding_rate", "datetime", "symbol", "instType", "method",  "realizedRate"]
+        }
+        
+    },
+
+    "coin":{
+        "end_point": "https://www.okex.com"
+    }
+}

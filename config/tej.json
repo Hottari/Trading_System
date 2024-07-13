@@ -1,0 +1,341 @@
+{
+    "exchange": "tej",
+
+    "index_property":{
+        "datatable_code": "TWN/EWIPRCSTD",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "idx_id": "代碼",
+                "mdate": "目前狀態",
+                "list_date": "上市日",
+                "delist_date": "下市日",
+                "idx_name": "名稱(中文)",
+                "market": "市場別"
+            },
+            "datetime_type": ["目前狀態", "上市日", "下市日"],
+            "string_type": ["代碼", "名稱(中文)", "市場別"],
+            "sort": ["目前狀態", "代碼"]
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }        
+    },
+    "securities_property":{
+        "datatable_code": "TWN/EWNPRCSTD",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "代碼",
+                "mdate": "目前狀態",
+                "tseindnm": "TSE產業名",
+                "list_date": "上市日",
+                "delist_date": "下市日",
+                "coid_name": "名稱(中文)",
+                "market": "市場別",
+                "stype": "證券種類代碼",
+                "stypenm": "證券種類名稱"
+            },
+            "datetime_type": ["目前狀態", "上市日", "下市日"],
+            "string_type": ["代碼", "TSE產業名", "名稱(中文)", "市場別", "證券種類代碼", "證券種類名稱"],
+            "sort": ["目前狀態", "代碼"]
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }        
+    },
+
+    "index":{
+        "datatable_code": "TWN/EWIPRCD",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "idx_id": "symbol",
+                "mdate": "datetime",
+                "open_d": "指數開盤價",
+                "high_d": "指數最高價",
+                "low_d": "指數最低價",
+                "close_d": "指數收盤價",
+                "volume": "成交量(千股)",
+                "pe_ratio": "TEJ本益比",
+                "stockno": "流通股數(千股)",
+                "pb_ratio": "TEJ淨值市價比",
+                "cdiv_ratio": "現金股利率"
+            },
+            "datetime_type": ["datetime"],
+            "string_type": ["symbol"],
+            "sort": ["datetime", "symbol"]
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }
+    },
+
+    "securities_trading_data":{
+        "datatable_code": "TWN/EWPRCD",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "symbol",
+                "mdate": "datetime",
+                "open_d": "開盤價",
+                "high_d": "最高價",
+                "low_d": "最低價",
+                "close_d": "收盤價",
+                "volume": "成交量(千股)",
+                "pe_ratio": "交易所本益比",
+                "stockno": "流通股數(千股)",
+                "pb_ratio": "交易所淨值市價比",
+                "cdiv_ratio": "現金股利率",
+                "open_adj": "開盤價-除權息",
+                "high_adj": "最高價-除權息",
+                "low_adj": "最低價-除權息",
+                "close_adj": "收盤價-除權息"
+            },
+            "datetime_type": ["datetime"],
+            "string_type": ["symbol"],
+            "sort": ["datetime", "symbol"]
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }           
+    },
+    "securities_returns":{
+        "datatable_code": "TWN/EWPRCD2",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "symbol",
+                "mdate": "datetime",
+                "roia": "日報酬率(%)",
+                "roi_w": "近一週報酬率(%)",
+                "roi_m": "近一月報酬率(%)",
+                "roi_q": "近一季報酬率(%)",
+                "roi_y": "近一年報酬率(%)"
+            },
+            "datetime_type": ["datetime"],
+            "string_type": ["symbol"],
+            "sort": ["datetime", "symbol"]
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }          
+    },
+    "margin_trading":{
+        "datatable_code": "TWN/EWGIN",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "symbol",
+                "mdate": "datetime",
+                "buy_l": "融資買進(張)",
+                "sell_l": "融資賣出(張)",
+                "buy_s": "融券買入(張)",
+                "sell_s": "融券賣出(張)",
+                "gin0": "融資餘額(張)",
+                "gin4": "融券餘額(張)",
+                "l0ng_ta": "融資餘額(千元)",
+                "short_ta": "融券餘額(千元)",
+                "gin3": "融資使用率",
+                "gin7": "融券使用率",
+                "gin8": "券資比",
+                "lmr": "融資維持率",
+                "smr": "融券維持率",
+                "tmr": "整戶維持率"
+            },
+            "datetime_type": ["datetime"],
+            "string_type": ["symbol"],
+            "sort": ["datetime", "symbol"]
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }
+    },
+    "institutional_investors":{
+        "datatable_code": "TWN/EWTINST1",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "symbol",
+                "mdate": "datetime",
+                "qfii_ex1": "外資買賣超(千股)",
+                "fund_ex": "投信買賣超(千股)",
+                "dlr_ex": "自營買賣超(千股)",
+                "ttl_ex": "合計買賣超(千股)",
+                "qfii_buy": "外資買進張數",
+                "fd_buy": "投信買進張數",
+                "qfii_sell": "外資賣出張數",
+                "fd_sell": "投信賣出張數",
+                "dlr_buy": "自營買進張數",
+                "dlr_sell": "自營賣出張數",
+                "ttl_stk": "外資總持股數(千股)",
+                "fld008": "投信總持股數(千股)",
+                "fld011": "自營總持股數(千股)",
+                "t_pct": "外資總持股率(%)",
+                "fld022": "投信總持股率(%)",
+                "fld023": "自營總持股率(%)"
+            },
+            "datetime_type": ["datetime"],
+            "string_type": ["symbol"],
+            "sort": ["datetime", "symbol"]
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }        
+    },
+
+    "monthly_revenue":{
+        "datatable_code": "TWN/EWSALE",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "證券碼",
+                "mdate": "資料日期",
+                "annd_s": "營收發布日",
+                "d0001": "單月營收(千元)",
+                "d0002": "去年單月營收(千元)",
+                "d0003": "單月營收成長率%",
+                "d0005": "累積營收(千元)",
+                "d0006": "去年累積營收(千元)",
+                "d0007": "累積營收成長率(%)"
+            },
+            "datetime_type": ["營收發布日", "資料日期"],
+            "string_type": ["證券碼"],
+            "sort": ["資料日期", "證券碼", "營收發布日"]
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }          
+    },
+
+    "financial_report":{
+        "datatable_code": "TWN/EWIFINQ",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "證券碼",
+                "mdate": "財務資料日",
+                "sem": "季別",
+                "merg": "合併(Y/N)",
+                "qflg": "單季(Q)/單半年(H)",
+                "mm": "月份",
+                "curr": "幣別",
+                "a0003": "財報發布日",
+                "ac_3990": "每股盈餘",
+                "ac_r100": "ROA(C) 稅前息前折舊前",
+                "ac_r103": "ROE(A)-稅後",
+                "ac_r105": "營業毛利率",
+                "ac_r106": "營業利益率",
+                "ac_r108": "稅後淨利率",
+                "cfode": "CFO/負債",
+                "cfoni": "CFO/合併總損益",
+                "ac_r205": "現金流量比率",
+                "ac_200d": "每股淨值(F)-TSE公告數",
+                "ac_r401": "營收成長率",
+                "ac_r402": "營業毛利成長率",
+                "ac_r403": "營業利益成長率",
+                "ac_r501": "流動比率",
+                "ac_r502": "速動比率",
+                "ac_r505": "負債比率",
+                "ac_r507": "長期資金適合率(A)",
+                "ac_r608": "應收帳款週轉次數",
+                "ac_r607": "總資產週轉次數",
+                "ac_r610": "存貨週轉率(次)",
+                "ac_0130": "應收帳款及票據",
+                "ac_0170": "存貨",
+                "ac_0100": "流動資產",
+                "ac_0314": "採權益法之長期股權投資",
+                "ac_0400": "不動產廠房及設備",
+                "ac_0820": "商譽及無形資產合計",
+                "ac_0960": "非流動資產",
+                "ac_0010": "資產總額",
+                "ac_1120": "短期借款",
+                "ac_1110": "應付商業本票∕承兌匯票",
+                "ac_1220": "一年內到期長期負債",
+                "ac_1100": "流動負債",
+                "ac_1421": "應付公司債－非流動",
+                "ac_1411": "銀行借款－非流動",
+                "ac_1441": "其他長期借款－非流動",
+                "ac_1800": "非流動負債",
+                "ac_1000": "負債總額",
+                "ac_211e": "股本",
+                "ac_2341": "保留盈餘",
+                "ac_2000": "股東權益總額",
+                "ac_0020": "負債及股東權益總額",
+                "ac_3100": "營業收入淨額",
+                "ac_3200": "營業成本",
+                "ac_3295": "營業毛利",
+                "ac_3300": "營業費用",
+                "ac_3395": "營業利益",
+                "ac_3700": "營業外收入及支出",
+                "ac_3910": "所得稅費用",
+                "ac_3970": "合併總損益",
+                "ac_3950": "歸屬母公司淨利（損）",
+                "ac_7211": "折舊－CFO",
+                "ac_7212": "攤提－CFO",
+                "ac_7210": "來自營運之現金流量",
+                "ac_7300": "投資活動之現金流量",
+                "ac_7400": "籌資活動之現金流量"
+            },
+            "datetime_type": ["財報發布日", "財務資料日"],
+            "string_type": ["證券碼", "合併(Y/N)", "單季(Q)/單半年(H)", "月份", "幣別"],
+            "sort": ["財務資料日", "證券碼", "財報發布日"]
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }
+    },
+
+    "futures":{
+        "datatable_code": "TWN/AFUTR",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "symbol",
+                "mdate": "datetime",
+                "due_m": "到期月",
+                "open_d": "開盤價",
+                "high_d": "最高價",
+                "low_d": "最低價",
+                "close_d": "收盤價",
+                "settle": "每日結算價",
+                "roi": "報酬率",
+                "vol_d": "成交量",
+                "oi_2": "未平倉合約數",
+                "basis": "基差",
+                "remain": "剩餘天數",
+                "underlying_id": "標的現貨代碼",
+                "underlying_name": "標的現貨名稱",
+                "aroi": "標的現貨報酬率"
+            },
+            "datetime_type": ["datetime", "到期月"],
+            "string_type": ["symbol", "標的現貨代碼", "標的現貨名稱"],
+            "sort": ["datetime", "symbol", "到期月"]
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }
+    },
+
+    "index_components":{
+        "datatable_code": "TWN/AIDXS",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "index_symbol",
+                "mdate": "datetime",
+                "key3": "成份股",
+                "idxwe": "指數因子",
+                "mv_pct": "前日市值比重",
+                "f_float": "公眾流通係數",
+                "zstk_amt": "股數"
+            },
+            "datetime_type": ["datetime"],
+            "string_type": ["index_symbol", "成份股"],
+            "sort": ["datetime", "index_symbol", "成份股"]
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }
+    }
+}

@@ -1,0 +1,21 @@
+# folder
+__pycache__/
+data_base/
+test/
+*test_*/
+Trading_Strategies/
+Trading_Tracker/
+Factor_System/
+
+# file
+test.py
+test.ipynb
+api_config.ini
+file_path_config.ini
+
+
+# type
+*.csv
+*.pkl
+*.h5
+*.parquet
