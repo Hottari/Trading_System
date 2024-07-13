@@ -126,7 +126,9 @@ class DataProcessor():
             )
         else:
             raise ValueError(f"sort_columns should be subset of {combined_ddf.columns}")
-        updated_ddf.to_parquet(data_path, compression='snappy')
+        # dask 無法複寫 parquet, or 必須先刪除再複寫 -> 風險極大
+        updated_table = pa.Table.from_pandas(updated_ddf.compute())
+        pq.write_table(updated_table, data_path, compression='snappy')
 
     def add_missing_columns_to_paTable_with_none(self, table:pa.Table, missing_columns, reference_schema):
         for col in missing_columns:
