@@ -95,8 +95,9 @@ class DataProcessor():
         # get new and non-overlapping table
         new_table = pa.Table.from_pandas(new_data, preserve_index=False)
         dataset = ds.dataset(data_path, format="parquet")
-        start_date = new_data[datetime_column].iloc[0]
-        end_date = new_data[datetime_column].iloc[-1]
+        datetime_sorted = new_data[datetime_column].sort_values()
+        start_date = datetime_sorted.iloc[0]
+        end_date = datetime_sorted.iloc[-1]
         non_overlapping_table = dataset.to_table(
             columns = None,
             filter = ( ds.field(datetime_column) < pa.scalar(start_date)) | (ds.field(datetime_column) > pa.scalar(end_date))
