@@ -5,6 +5,7 @@ import json
 import os, sys
 sys.path.extend(['../', '../../'])
 from prepare_data import ExchangeData
+from data_processor import DataProcessor
 
 CONFIG_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'config')
 
@@ -21,7 +22,7 @@ import tejapi
 tejapi.ApiConfig.api_key = config.get('tej_api', 'api_key')
 
 
-class TEJHandler(ExchangeData):  
+class TEJHandler(ExchangeData, DataProcessor):  
     """
         說明頁面: https://api.tej.com.tw/document_python.html
         第一季季報: 5月15日前

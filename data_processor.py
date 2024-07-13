@@ -9,7 +9,121 @@ class DataProcessor():
     def __init__(self):
         pass
 
-    # ==================== index ==================== #
+    # ========================== data type ========================== #
+    def clean_data(self, data:pd.DataFrame, datetime_cols=[], str_cols=[]):
+        for col in data.columns:
+            data[col] = data[col].astype(str).str.strip()
+            if col in datetime_cols:
+                data[col] = pd.to_datetime(data[col]).dt.tz_localize(None)
+            elif col not in str_cols:
+                data[col] = pd.to_numeric(data[col], errors='coerce') 
+        return data
+    
+    # ========================== file type ========================== #
+    def get_parquet_columns(self, data_path)->list:
+        """
+            Get parquet file columns
+            
+            Args:
+            - data_path (str): parquet file path
+
+            Returns:
+            - list: parquet file columns
+        """
+        return pq.ParquetFile(source=data_path).schema.names
+
+    def get_parquet_data(
+            self, 
+            data_path:str, 
+            datetime_col:str= 'datetime', 
+            start_date = None, end_date = None,
+            need_cols = None,
+        )-> pd.DataFrame:
+        """
+            Get speific datetime period and columns data from parquet file
+            
+            Args:
+            - data_path (str): parquet file path
+            - datetime_col (str): datetime column name
+            - start_date (pd.Timestamp): start date, default None
+            - end_date (pd.Timestamp): end date, default None
+
+            Returns:
+            - pd.DataFrame: dataframe with specific datetime period and columns data
+        """
+        # set filter conditions
+        filters = []
+        if start_date is not None:
+            filters.append(ds.field(datetime_col) >= pa.scalar(start_date))
+        if end_date is not None:
+            filters.append(ds.field(datetime_col) <= pa.scalar(end_date))
+
+        combined_filter = filters[0] if filters else None
+        for f in filters[1:]:
+            combined_filter = combined_filter & f
+
+        # get data
+        dataset = ds.dataset(data_path, format="parquet")
+        filtered_table = dataset.to_table(
+            columns = need_cols,
+            filter = combined_filter
+        )
+        filtered_df = filtered_table.to_pandas()
+        return filtered_df
+
+    def add_missing_columns_to_paTable_with_none(self, table:pa.Table, missing_columns, reference_schema):
+        for col in missing_columns:
+            data_type = reference_schema.field(col).type
+            none_column = pa.array([None] * table.num_rows, type=data_type)
+            table = table.append_column(col, none_column)
+        return table
+
+    def update_parquet_data(
+            self, 
+            data_path:str,
+            new_data:pd.DataFrame, 
+            datetime_column:str = 'datetime',
+        ):
+        """
+            Replace the overlapping data with new data and add missing columns.
+
+            Args:
+            - data_path (str): parquet file path
+            - new_data (pd.DataFrame): new data
+            - datetime_column (str): datetime column name
+        """
+        # get new and non-overlapping table
+        new_table = pa.Table.from_pandas(new_data, preserve_index=False)
+        dataset = ds.dataset(data_path, format="parquet")
+        start_date = new_data[datetime_column].iloc[0]
+        end_date = new_data[datetime_column].iloc[-1]
+        non_overlapping_table = dataset.to_table(
+            columns = None,
+            filter = ( ds.field(datetime_column) < pa.scalar(start_date)) | (ds.field(datetime_column) > pa.scalar(end_date))
+        )
+        new_table_schema = new_table.schema
+        non_overlapping_table_schema = non_overlapping_table.schema
+
+        # add missing columns
+        missing_in_new_table = set(non_overlapping_table_schema.names) - set(new_table_schema.names)
+        missing_in_non_overlapping_table = set(new_table_schema.names) - set(non_overlapping_table_schema.names)
+        new_table = self.add_missing_columns_to_paTable_with_none(new_table, missing_in_new_table, non_overlapping_table_schema)
+        non_overlapping_table = self.add_missing_columns_to_paTable_with_none(non_overlapping_table, missing_in_non_overlapping_table, new_table_schema)
+        
+        # schema order and type
+        # new_table = new_table.select(non_overlapping_table_schema.names)
+        new_schema = pa.schema([(field.name, field.type) for field in non_overlapping_table.schema])
+        new_schema_field_names = [field.name for field in new_schema]
+        ## make same order
+        new_table = new_table.select(new_schema_field_names)
+        ## make same type
+        new_table = new_table.cast(new_schema)
+
+        updated_table = pa.concat_tables([non_overlapping_table, new_table])
+        pq.write_table(updated_table, data_path, compression='snappy')
+
+
+    # ========================== index ========================== #
     def add_time(self, df, datetime_name='datetime'):
         df['year'] = df[datetime_name].dt.year
         df['month'] = df[datetime_name].dt.month
@@ -19,7 +133,7 @@ class DataProcessor():
         df['date'] = pd.to_datetime(df[datetime_name].dt.date)
         return df
     
-    # ==================== ohlcvr ==================== #
+    # ========================== ohlcvr ========================== #
     def get_ret_oc(self, df):
         return df['close']/df['open']-1
 
@@ -92,7 +206,7 @@ class DataProcessor():
         df['close_adj'] = close_adj
         return df
 
-    # ==================== time series ==================== #
+    # ========================== time series ========================== #
     def get_rolling_ema(self, data, window, alpha):
         ema_data = np.full(window-1, np.nan)
         for i in range(window-1, len(data)):
@@ -160,110 +274,6 @@ class DataProcessor():
             df_stand = (df[data_name] - df_mean)/df_std
             df_data[f"{data_name}_stand"] = df_stand.stack()
         return df.stack()
-
-    # ==================== data type ==================== #
-    def get_parquet_columns(self, data_path)->list:
-        """
-            Get parquet file columns
-            
-            Args:
-            - data_path (str): parquet file path
-
-            Returns:
-            - list: parquet file columns
-        """
-        return pq.ParquetFile(source=data_path).schema.names
-
-    def get_parquet_data(
-            self, 
-            data_path:str, 
-            datetime_col:str= 'datetime', 
-            start_date = None, end_date = None,
-            need_cols = None,
-        )-> pd.DataFrame:
-        """
-            Get speific datetime period and columns data from parquet file
-            
-            Args:
-            - data_path (str): parquet file path
-            - datetime_col (str): datetime column name
-            - start_date (pd.Timestamp): start date, default None
-            - end_date (pd.Timestamp): end date, default None
-
-            Returns:
-            - pd.DataFrame: dataframe with specific datetime period and columns data
-        """
-        # set filter conditions
-        filters = []
-        if start_date is not None:
-            filters.append(ds.field(datetime_col) >= pa.scalar(start_date))
-        if end_date is not None:
-            filters.append(ds.field(datetime_col) <= pa.scalar(end_date))
-
-        combined_filter = filters[0] if filters else None
-        for f in filters[1:]:
-            combined_filter = combined_filter & f
-
-        # get data
-        dataset = ds.dataset(data_path, format="parquet")
-        filtered_table = dataset.to_table(
-            columns = need_cols,
-            filter = combined_filter
-        )
-        filtered_df = filtered_table.to_pandas()
-        return filtered_df
     
-    def add_missing_columns_to_paTable_with_none(self, table:pa.Table, missing_columns, reference_schema):
-        for col in missing_columns:
-            data_type = reference_schema.field(col).type
-            none_column = pa.array([None] * table.num_rows, type=data_type)
-            table = table.append_column(col, none_column)
-        return table
-
-    def update_parquet_data(
-            self, 
-            data_path:str,
-            new_data:pd.DataFrame, 
-            datetime_column:str = 'datetime',
-        ):
-        """
-            Replace the overlapping data with new data and add missing columns.
-
-            Args:
-            - data_path (str): parquet file path
-            - new_data (pd.DataFrame): new data
-            - datetime_column (str): datetime column name
-        """
-        # get new and non-overlapping table
-        new_table = pa.Table.from_pandas(new_data, preserve_index=False)
-        dataset = ds.dataset(data_path, format="parquet")
-        start_date = new_data[datetime_column].iloc[0]
-        end_date = new_data[datetime_column].iloc[-1]
-        non_overlapping_table = dataset.to_table(
-            columns = None,
-            filter = ( ds.field(datetime_column) < pa.scalar(start_date)) | (ds.field(datetime_column) > pa.scalar(end_date))
-        )
-        new_table_schema = new_table.schema
-        non_overlapping_table_schema = non_overlapping_table.schema
-
-        # add missing columns
-        missing_in_new_table = set(non_overlapping_table_schema.names) - set(new_table_schema.names)
-        missing_in_non_overlapping_table = set(new_table_schema.names) - set(non_overlapping_table_schema.names)
-        new_table = self.add_missing_columns_to_paTable_with_none(new_table, missing_in_new_table, non_overlapping_table_schema)
-        non_overlapping_table = self.add_missing_columns_to_paTable_with_none(non_overlapping_table, missing_in_non_overlapping_table, new_table_schema)
-        
-        # schema order and type
-        # new_table = new_table.select(non_overlapping_table_schema.names)
-        new_schema = pa.schema([(field.name, field.type) for field in non_overlapping_table.schema])
-        new_schema_field_names = [field.name for field in new_schema]
-        ## make same order
-        new_table = new_table.select(new_schema_field_names)
-        ## make same type
-        new_table = new_table.cast(new_schema)
-
-        updated_table = pa.concat_tables([non_overlapping_table, new_table])
-        pq.write_table(updated_table, data_path, compression='snappy')
-
-
 
 # ==================================== Tail ==================================== #

@@ -26,15 +26,6 @@ class ExchangeData:
             exchange_config = json.loads(f.read())
         return exchange_config
 
-    def clean_data(self, data:pd.DataFrame, datetime_cols=[], str_cols=[]):
-        for col in data.columns:
-            data[col] = data[col].astype(str).str.strip()
-            if col in datetime_cols:
-                data[col] = pd.to_datetime(data[col]).dt.tz_localize(None)
-            elif col not in str_cols:
-                data[col] = pd.to_numeric(data[col], errors='coerce') 
-        return data
-
     # ==================== end point ==================== #
     def get_end_point(self):
         return self.exchange_config[self.symbol_type]["end_point"]

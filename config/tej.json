@@ -86,11 +86,7 @@
                 "pe_ratio": "交易所本益比",
                 "stockno": "流通股數(千股)",
                 "pb_ratio": "交易所淨值市價比",
-                "cdiv_ratio": "現金股利率",
-                "open_adj": "開盤價-除權息",
-                "high_adj": "最高價-除權息",
-                "low_adj": "最低價-除權息",
-                "close_adj": "收盤價-除權息"
+                "cdiv_ratio": "現金股利率"
             },
             "datetime_type": ["datetime"],
             "string_type": ["symbol"],
@@ -204,7 +200,7 @@
             "sort": ["資料日期", "證券碼", "營收發布日"]
         },
         "params_name":{
-            "datetime": "mdate"
+            "datetime": "annd_s"
         }          
     },
 
@@ -282,7 +278,7 @@
             "sort": ["財務資料日", "證券碼", "財報發布日"]
         },
         "params_name":{
-            "datetime": "mdate"
+            "datetime": "a0003"
         }
     },
 

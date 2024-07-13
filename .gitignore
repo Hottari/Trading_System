@@ -12,7 +12,7 @@ test.py
 test.ipynb
 api_config.ini
 file_path_config.ini
-
+file_name_config.ini
 
 # type
 *.csv
