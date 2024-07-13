@@ -4,6 +4,7 @@ import pandas as pd
 import pyarrow.parquet as pq
 import pyarrow.dataset as ds
 import pyarrow as pa
+import dask.dataframe as dd
 
 class DataProcessor():
     def __init__(self):
@@ -32,7 +33,31 @@ class DataProcessor():
         """
         return pq.ParquetFile(source=data_path).schema.names
 
-    def get_parquet_data(
+    def get_parquet_data_with_dask(
+            self,
+            data_path:str, 
+            datetime_col:str= 'datetime', 
+            start_date = None, end_date = None,
+            need_cols = None, 
+        )-> pd.DataFrame:
+        # set filter conditions
+        # datetime filter only temporarily
+        filters = []
+        if start_date is not None:
+            filters.append((datetime_col, '>=', pd.to_datetime(start_date)))
+        if end_date is not None:
+            filters.append((datetime_col, '<=', pd.to_datetime(end_date)))
+        specific_partition_df = dd.read_parquet(data_path, filters=filters, columns=need_cols)
+        if need_cols is not None:
+            if datetime_col in need_cols:
+                filtered_df = specific_partition_df.groupby(datetime_col).sum().compute()
+            else: 
+                filtered_df = specific_partition_df.compute()
+        else:
+            filtered_df = specific_partition_df.compute()
+        return filtered_df
+
+    def get_parquet_data_with_pyarrow(
             self, 
             data_path:str, 
             datetime_col:str= 'datetime', 
@@ -71,6 +96,38 @@ class DataProcessor():
         filtered_df = filtered_table.to_pandas()
         return filtered_df
 
+    def update_parquet_data_with_dask(
+            self, 
+            data_path:str,
+            new_data:pd.DataFrame,
+            keep:str,
+            sort_columns:list = ['datetime', 'symbol'],
+            duplicate_columns:list = ['datetime', 'symbol'],
+            
+        ):
+        """
+            Replace the overlapping data with new data and add missing columns.
+
+            Args:
+            - data_path (str): parquet file path
+            - new_data (pd.DataFrame): new data
+            - datetime_column (str): datetime column name
+        """
+        # get new and non-overlapping table
+        existing_ddf = dd.read_parquet(data_path)
+        # faster than "npartitions=1"
+        new_ddf = dd.from_pandas(new_data, npartitions=existing_ddf.npartitions)
+        combined_ddf = dd.concat([existing_ddf, new_ddf])
+        if set(sort_columns) <= set(combined_ddf.columns):
+            updated_ddf = (
+                combined_ddf
+                .sort_values(by=sort_columns)
+                .drop_duplicates(subset=duplicate_columns, keep=keep)
+            )
+        else:
+            raise ValueError(f"sort_columns should be subset of {combined_ddf.columns}")
+        updated_ddf.to_parquet(data_path, compression='snappy')
+
     def add_missing_columns_to_paTable_with_none(self, table:pa.Table, missing_columns, reference_schema):
         for col in missing_columns:
             data_type = reference_schema.field(col).type
@@ -78,7 +135,7 @@ class DataProcessor():
             table = table.append_column(col, none_column)
         return table
 
-    def update_parquet_data(
+    def update_parquet_data_with_pyarrow(
             self, 
             data_path:str,
             new_data:pd.DataFrame, 
@@ -94,11 +151,11 @@ class DataProcessor():
         """
         # get new and non-overlapping table
         new_table = pa.Table.from_pandas(new_data, preserve_index=False)
-        dataset = ds.dataset(data_path, format="parquet")
+        existing_table = ds.dataset(data_path, format="parquet")
         datetime_sorted = new_data[datetime_column].sort_values()
         start_date = datetime_sorted.iloc[0]
         end_date = datetime_sorted.iloc[-1]
-        non_overlapping_table = dataset.to_table(
+        non_overlapping_table = existing_table.to_table(
             columns = None,
             filter = ( ds.field(datetime_column) < pa.scalar(start_date)) | (ds.field(datetime_column) > pa.scalar(end_date))
         )

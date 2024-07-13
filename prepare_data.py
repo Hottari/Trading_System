@@ -73,6 +73,9 @@ class ExchangeData:
     
     def get_columns_sort(self):
         return self.exchange_config[self.symbol_type]["columns"]["sort"]
+    
+    def get_columns_duplicate(self):
+        return self.exchange_config[self.symbol_type]["columns"]["duplicate"]
 
     def get_columns_uncategorized(self):
         return self.exchange_config[self.symbol_type]["columns"]

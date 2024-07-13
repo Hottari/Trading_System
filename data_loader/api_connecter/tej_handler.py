@@ -41,6 +41,7 @@ class TEJHandler(ExchangeData, DataProcessor):
             self.columns_datetime = self.get_columns_datetime_type()
             self.columns_string = self.get_columns_string_type()
             self.columns_sort = self.get_columns_sort()
+            self.columns_duplicate = self.get_columns_duplicate()
             self.params_name = self.get_params_name()
 
     def get_api_using_info(self,):
