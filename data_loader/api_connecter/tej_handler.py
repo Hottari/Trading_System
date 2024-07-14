@@ -3,11 +3,13 @@ from datetime import datetime
 import json
 
 import os, sys
-sys.path.extend(['../', '../../'])
+PROJECT_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+sys.path.extend([PROJECT_ROOT])
 from prepare_data import ExchangeData
 from data_processor import DataProcessor
 
-CONFIG_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'config')
+
+CONFIG_ROOT = os.path.join(PROJECT_ROOT, 'config')
 
 # read data
 import configparser
