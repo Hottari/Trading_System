@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
-import os, sys
 import requests, time, asyncio # aiohttp
 import importlib
 
-PROJECT_ROOT = '..'
+import os, sys
+PROJECT_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 sys.path.extend([PROJECT_ROOT, '../..']) 
 from prepare_data import ExchangeData
 from message_manager import MessageManager
@@ -90,8 +90,8 @@ class DataLoader(ExchangeData):
 
     def get_fetch_function(self, item:str):
         exchange_handlers = {
-            'binance': 'Data_Loader.api_connecter.binance_handler.BinanceHandler',
-            'okx': 'Data_Loader.api_connecter.okx_handler.OKXHandler',
+            'binance': 'data_loader.api_connecter.binance_handler.BinanceHandler',
+            'okx': 'data_loader.api_connecter.okx_handler.OKXHandler',
             # Add more exchanges here...
         }
         if self.exchange in exchange_handlers:

@@ -4,9 +4,9 @@ import sys, os
 import time
 from datetime import datetime
 
-PROJECT_ROOT = os.path.dirname(os.getcwd())
+PROJECT_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 sys.path.extend([PROJECT_ROOT, '..', '../..']) 
-from Data_Loader.data_loader import DataLoader
+from data_loader.data_loader import DataLoader
 
 async def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_li=None):
     loader = DataLoader(
@@ -32,18 +32,18 @@ params = {
     'start': '2010-1-1',
     'end': None,
     'freq': '1h',
-    # 'symbol_li': [
-    #     "BTCUSDT",
-    #     "ETHUSDT",
-    #     "BNBUSDT",
-    #     "SOLUSDT",
-    #     "XRPUSDT",
-    #     "ADAUSDT",
-    #     "AVAXUSDT",
-    #     "LINKUSDT",
-    #     "DOTUSDT",
-    #     "TRXUSDT"
-    # ],
+    'symbol_li': [
+        # "BTCUSDT",
+        # "ETHUSDT",
+        # "BNBUSDT",
+        # "SOLUSDT",
+        # "XRPUSDT",
+        # "ADAUSDT",
+        # "AVAXUSDT",
+        # "LINKUSDT",
+        # "DOTUSDT",
+        # "TRXUSDT"
+    ],
 }
 asyncio.run(update_data(**params))
 
