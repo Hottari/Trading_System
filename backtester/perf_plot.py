@@ -85,7 +85,13 @@ class PerfPlot():
         print(f"Interactive plot saved to: {os.path.join(os.getcwd(), html_file_path)}")
 
 
-    def plot_mdd_plotly(self, df, data_name, title=None, is_ret=True, is_save=False, separate_date=None):
+    def plot_mdd_plotly(
+        self, 
+        df, data_name, 
+        title=None, is_ret=True, 
+        is_save=False, separate_date=None,
+        height = 600, width = 1000,
+    ):
         if is_ret:
             df['drawdown'] = (df[data_name]+1) / (np.maximum(0, df[data_name].cummax())+1) - 1
         else:
