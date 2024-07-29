@@ -25,6 +25,30 @@ class PerfPlot():
         pass
 
     # ================== Data Attributes ==================
+    def plot_distribution_plotly(self, data: np.ndarray, data_name:str = '', bins:int=20, width=1000, height=500):
+        """
+        Plot data distribution using Plotly's iplot method.
+
+        Args:
+            data (array or Series): Data to plot
+            data_name (str): Title of the plot
+            bins (int): Number of bins for the distribution
+
+        Example:
+            plot_distribution(data, 'Volume', bins=100)
+        """
+        # Convert data to DataFrame
+        df = pd.DataFrame(data, columns=[data_name])
+
+        # Plot using iplot
+        fig = df.iplot(kind='hist', bins=bins, histnorm='probability density', title=f'Distribution {data_name}', 
+                xTitle=data_name, yTitle='Density', colors='skyblue', asFigure=True)
+        
+        fig.update_layout(width=width, height=height, bargap=0.1)
+        fig.show()
+
+
+
     def plot_distribution(self, data:np.ndarray, data_name:str='', bins:int=100):
         """
         plot data distribution
