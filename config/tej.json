@@ -46,6 +46,32 @@
             "datetime": "mdate"
         }        
     },
+    "futures_property":{
+        "datatable_code": "TWN/AFUTRSTD",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "代碼",
+                "mdate": "目前狀態",
+                "eved1": "上市日",
+                "eved2": "最後交易日",
+                "eved3": "最後結算日",
+                "due_m1": "到期月",
+                "futrnm_c": "名稱(中文)",
+                "mkt_c": "市場別",
+                "twse_code": "TWSE代碼",
+                "twse_name": "TWSE名稱",
+                "isin": "ISIN"
+            },
+            "datetime_type": ["目前狀態", "上市日", "最後交易日", "最後結算日"],
+            "string_type": ["代碼", "名稱(中文)", "市場別", "TWSE代碼", "TWSE名稱", "ISIN"],
+            "sort": ["目前狀態", "代碼"],
+            "duplicate": []
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }        
+    },
 
     "index":{
         "datatable_code": "TWN/EWIPRCD",
