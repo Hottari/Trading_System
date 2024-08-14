@@ -56,8 +56,8 @@ class BinanceHandler():
 
 
 
-    async def fetch_ohlcv(
-    # def fetch_ohlcv( 
+    # async def fetch_ohlcv(
+    def fetch_ohlcv( 
             self, 
             url, symbol, freq, limit, columns,
             start_ts13,
@@ -82,15 +82,15 @@ class BinanceHandler():
             'endTime': end_ts13,
         }
         params = {k: v for k, v in params.items() if v is not None}     # none in params will make sesstion.get() error
-        async with aiohttp.ClientSession() as session:
-        # with requests.Session() as session:
+        # async with aiohttp.ClientSession() as session:
+        with requests.Session() as session:
             while True:
                 message.fetching(item, symbol, start_time=pd.to_datetime(start_ts13, unit='ms').tz_localize('UTC'))
                 params['startTime'] = start_ts13                        # update start_time
-                async with session.get(url, params=params) as resp:
-                    data = await resp.json()
-                # resp = session.get(url, params=params)
-                # data = resp.json()
+                # async with session.get(url, params=params) as resp:
+                #     data = await resp.json()
+                resp = session.get(url, params=params)
+                data = resp.json()
                 data_li.extend(data) 
                 if len(data) < limit:
                     break
@@ -100,8 +100,8 @@ class BinanceHandler():
         return df
 
 
-    async def fetch_funding_rate(
-    # def fetch_funding_rate(
+    # async def fetch_funding_rate(
+    def fetch_funding_rate(
             self, 
             url, symbol, limit, columns,
             start_ts13, 
@@ -124,15 +124,15 @@ class BinanceHandler():
             'endTime': end_ts13,
         }
         params = {k: v for k, v in params.items() if v is not None}     # none in params will make sesstion.get() error
-        async with aiohttp.ClientSession() as session:
-        # with requests.Session() as session:
+        # async with aiohttp.ClientSession() as session:
+        with requests.Session() as session:
             while True:
                 message.fetching(item, symbol, start_time=pd.to_datetime(start_ts13, unit='ms').tz_localize('UTC'))
                 params['startTime'] = start_ts13                        # update start_time
-                async with session.get(url, params=params) as resp:
-                    data = await resp.json()
-                # resp = session.get(url, params=params)
-                # data = resp.json()
+                # async with session.get(url, params=params) as resp:
+                #     data = await resp.json()
+                resp = session.get(url, params=params)
+                data = resp.json()
                 data_li.extend(data) 
                 if len(data) < limit:
                     break
@@ -142,8 +142,8 @@ class BinanceHandler():
         return df
 
 
-    async def fetch_long_short_ratio(
-    # def fetch_long_short_ratio(
+    #async def fetch_long_short_ratio(
+    def fetch_long_short_ratio(
             self, 
             url, symbol, freq, limit, columns,
             start_ts13,
@@ -166,15 +166,15 @@ class BinanceHandler():
             'endTime': end_ts13,
         }
         params = {k: v for k, v in params.items() if v is not None}     # none in params will make sesstion.get() error
-        async with aiohttp.ClientSession() as session:
-        # with requests.Session() as session:
+        # async with aiohttp.ClientSession() as session:
+        with requests.Session() as session:
             while True:
                 message.fetching(item, symbol, start_time=pd.to_datetime(start_ts13, unit='ms').tz_localize('UTC'))
                 params['startTime'] = start_ts13                        # update start_time
-                async with session.get(url, params=params) as resp:
-                    data = await resp.json()
-                # resp = session.get(url, params=params)
-                # data = resp.json()
+                # async with session.get(url, params=params) as resp:
+                #     data = await resp.json()
+                resp = session.get(url, params=params)
+                data = resp.json()
                 data_li.extend(data) 
                 if len(data) < limit:
                     break

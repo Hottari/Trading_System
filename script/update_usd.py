@@ -13,8 +13,8 @@ config = configparser.ConfigParser()
 config.read(os.path.join(PROJECT_ROOT, 'config', 'file_path_config.ini'))
 SAVE_ROOT = config.get('path', 'crypto_data_path')
 
-async def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_li=None):
-# def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_li=None):
+# async def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_li=None):
+def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_li=None):
     loader = DataLoader(
         exchange = exchange, 
         symbol_type = symbol_type, 
@@ -24,14 +24,14 @@ async def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_
     )
     save_dir_ohlcv = os.path.join(SAVE_ROOT, exchange, symbol_type, 'ohlcv', freq)
     save_dir_fr = os.path.join(SAVE_ROOT, exchange, symbol_type, 'funding_rate')
-    tasks = [
-        loader.do_fetch_update(save_dir=save_dir_ohlcv, item='ohlcv', symbol_li=symbol_li, freq=freq),
-        loader.do_fetch_update(save_dir=save_dir_fr, item='funding_rate', symbol_li=symbol_li),
-    ]
-    # Run tasks concurrently
-    await asyncio.gather(*tasks)
-    # loader.do_fetch_update(save_dir=save_dir_ohlcv, item='ohlcv', symbol_li=symbol_li, freq=freq)
-    # loader.do_fetch_update(save_dir=save_dir_fr, item='funding_rate', symbol_li=symbol_li)
+    # tasks = [
+    #     loader.do_fetch_update(save_dir=save_dir_ohlcv, item='ohlcv', symbol_li=symbol_li, freq=freq),
+    #     loader.do_fetch_update(save_dir=save_dir_fr, item='funding_rate', symbol_li=symbol_li),
+    # ]
+    # # Run tasks concurrently
+    # await asyncio.gather(*tasks)
+    loader.do_fetch_update(save_dir=save_dir_ohlcv, item='ohlcv', symbol_li=symbol_li, freq=freq)
+    loader.do_fetch_update(save_dir=save_dir_fr, item='funding_rate', symbol_li=symbol_li)
 
 params = {
     'exchange': 'binance',
@@ -53,5 +53,5 @@ params = {
         # "TRXUSDT",
     ],
 }
-asyncio.run(update_data(**params))
-# update_data(**params)
+# asyncio.run(update_data(**params))
+update_data(**params)
