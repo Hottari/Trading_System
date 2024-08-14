@@ -38,3 +38,7 @@ class MessageManager:
     def empty_warning(self, item, symbol):
         """WARNING! {item} of {symbol} is empty."""
         print(f"WARNING! {item} of {symbol} is empty.") # not use ValueError(error_message) to stop the program.
+
+    def symbol_error(self, item, symbol):
+        """ERROR! {item} of {symbol} is not available."""
+        print(f"ERROR! {item} of {symbol} is not available.")
