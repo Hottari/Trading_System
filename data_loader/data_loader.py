@@ -113,8 +113,8 @@ class DataLoader(ExchangeData):
             raise ValueError(f"Unsupported exchange: {self.exchange}")
 
 
-    # async def do_fetch_update(
-    def do_fetch_update(
+    async def do_fetch_update(
+    # def do_fetch_update(
             self, 
             save_dir, item, freq:str=None,
             symbol_li:dict=None,
@@ -139,7 +139,7 @@ class DataLoader(ExchangeData):
         
         symbol_amount = len(symbol_li)
         for symbol in symbol_li:
-            # await asyncio.sleep(3)                        # avoid hitting request rate limit
+            await asyncio.sleep(3)                        # avoid hitting request rate limit
             message.updating(item, symbol_li.index(symbol)+1, symbol_amount)
             file_path = os.path.join(save_dir, f"{symbol}_{item}.pkl")
             df_ori = pd.read_pickle(file_path) if os.path.isfile(file_path) else pd.DataFrame()
@@ -149,8 +149,8 @@ class DataLoader(ExchangeData):
                 # no file or empty -> create new one
                 if not os.path.isfile(file_path) or df_ori.empty:
                     message.necessary_creating(item, symbol)
-                    # df_updated = await fetch_func(**fetch_args)
-                    df_updated = fetch_func(**fetch_args)
+                    df_updated = await fetch_func(**fetch_args)
+                    # df_updated = fetch_func(**fetch_args)
 
                     if df_updated.empty:
                         message.empty_warning(item, symbol) 
@@ -170,13 +170,13 @@ class DataLoader(ExchangeData):
                         continue
                     # update head
                     if start_ts13 < start_ts13_ori:
-                        # df_new_head = await fetch_func(**self.update_dic(fetch_args, {'end_ts13': start_ts13_ori-1}))
-                        df_new_head = fetch_func(**self.update_dic(fetch_args, {'end_ts13': start_ts13_ori-1}))
+                        df_new_head = await fetch_func(**self.update_dic(fetch_args, {'end_ts13': start_ts13_ori-1}))
+                        # df_new_head = fetch_func(**self.update_dic(fetch_args, {'end_ts13': start_ts13_ori-1}))
                         update_li.insert(0, df_new_head.map(lambda x: pd.to_numeric(x, errors='coerce')).astype('float64')) 
                     # update tail
                     if end_ts13 > end_ts13_ori:
-                        # df_new_tail = await fetch_func(**self.update_dic(fetch_args, {'start_ts13': end_ts13_ori+1}))
-                        df_new_tail = fetch_func(**self.update_dic(fetch_args, {'start_ts13': end_ts13_ori+1}))
+                        df_new_tail = await fetch_func(**self.update_dic(fetch_args, {'start_ts13': end_ts13_ori+1}))
+                        # df_new_tail = fetch_func(**self.update_dic(fetch_args, {'start_ts13': end_ts13_ori+1}))
                         update_li.append(df_new_tail.map(lambda x: pd.to_numeric(x, errors='coerce')).astype('float64'))
                     df_updated = pd.concat(update_li, axis='rows')
                     df_updated.to_pickle(file_path)
