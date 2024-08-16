@@ -7,23 +7,32 @@ class BackTester():
     def __init__(self):
         pass
 
+    # ======================= return =======================
     def get_daily_ret(self, ret):
         """
         轉換日內報酬為日報酬
-
         Args:
             ret (pd.Series): return time series
-
         Return:
-            pd.Series: 日報酬
-
-        Example:
-            get_daily_ret(ret)
+            pd.Series: daily return time series
         """
         df = ret.copy()
         return (1 + df).resample('D').prod() - 1
 
-    # return
+    def get_ret_oc(self, df):
+        return df['close']/df['open']-1
+
+    def get_ret_oo(self, df):
+        ret_oc = self.get_ret_oc(df)
+        ret_oo = (1+df['ret'])/((1+ret_oc)/(1+ret_oc.shift(1))) - 1
+        return ret_oo
+    
+    def get_ret_co(self, df):
+        ret_oc = self.get_ret_oc(df)
+        ret_co = (1+df['ret']) / (1+ret_oc) - 1
+        return ret_co
+
+
     #@jit(nopython=True)
     def get_ret(self, ret_arr:np.ndarray, friction_cost_arr:np.ndarray, signal_arr:np.ndarray, LS_adjust:int=1)-> dict: 
         """
@@ -67,7 +76,6 @@ class BackTester():
             'strategy_ret_arr':strategy_ret_arr,
             }
         return result
-
 
     def get_ret_from_signal(self, df:pd.DataFrame, is_long:bool=True, is_short:bool=True)-> dict: 
         """
@@ -115,46 +123,56 @@ class BackTester():
             'strategy_ret_short_arr': strategy_ret_short_arr,
         }
         return result
-    
 
-    def get_ret_after_fric(
-            self, 
+    def get_return_after_friction_cost(self, 
             rets, weights, 
-            fr=0, fee_rate_in=0.001425*0.7, fee_rate_out=0.001425*0.3+0.003, slip_rate=0, 
-            signal_delay_periods=0,
-    ):
+            fr=0, 
+            fee_rate_in=0.001425*0.3, fee_rate_out=0.001425*0.3+0.003, slip_rate=0, 
+            signal_delay_periods=1,
+            return_delay_periods=1,
+        ):
         """
         Get Return After Friction
 
         Args:
             rets (pd.DataFrame): return DataFrame with datetime index and symbol columns
             weights (pd.DataFrame): weighting DataFrame with datetime index and symbol columns
+            fr (float or pd.DataFrame): funding rate
+            fee_rate_in (float or pd.DataFrame): fee rate in
+            fee_rate_out (float or pd.DataFrame): fee rate out
+            slip_rate (float or pd.DataFrame): slip rate
+            signal_delay_periods (int): signal delay periods
+            return_delay_periods (int): return delay periods
 
         Return:
             pd.DataFrame: return after friction DataFrame with datetime index and symbol columns
 
-        Example:
-            get_ret_after_fric(rets, weights)
+        About periods:
+            t=0 signal generate
+            t=1 market open entry position have friction cost -> "shift(1)"
+            t=2 generate return
         """
-        # ret_after_fric
+        weights = weights.fillna(0).copy()
         weight_change = weights.diff().shift(signal_delay_periods).fillna(0)
-        weights_ret_happen = weights.shift(signal_delay_periods+1).fillna(0)
+        weights_ret_happen = weights.shift(signal_delay_periods+return_delay_periods).fillna(0)
         ret_weighted = weights_ret_happen * rets
-        # t=0 生訊號, 立即進場生摩擦
-        # t=1 生報酬
+        # Only when returns are generated is it necessary to adjust returns for frictional losses.
+        ret_to_fric_adjust = weights_ret_happen.where(weights_ret_happen==0, weights_ret_happen/weights_ret_happen) * rets
 
-        ret_to_fric_adjust = weights_ret_happen.where(weights_ret_happen==0, weights_ret_happen/weights_ret_happen) * rets  # 有產生報酬才需要對摩擦損失做報酬調整 
+        # funding rate is calculated in the next period
+        fr_loss = weights_ret_happen * fr * (1+ret_to_fric_adjust) 
 
-        fr_loss = weights_ret_happen * fr * (1+ret_to_fric_adjust)                                                          # ret 計在下期
-        fee_loss_in = ( weight_change[weight_change>0] * ( fee_rate_in * ( 1+ret_to_fric_adjust ) ) ).fillna(0)             # fee 計在轉倉當下
-        fee_loss_out = -( weight_change[weight_change<0] * ( fee_rate_out * ( 1+ret_to_fric_adjust ) ) ).fillna(0)
-        slip_lose = np.abs(weight_change) * ( slip_rate * ( 1+ret_to_fric_adjust ) )                                        # slippage 計在轉倉當下
-        
-        ret_after_fric = ret_weighted - fr_loss - fee_loss_in - fee_loss_out - slip_lose
+        # fee is calculated at the moment when position is opened
+        fee_loss_in = (weight_change[weight_change>0].fillna(0) * (fee_rate_in * (1+ret_to_fric_adjust))).fillna(0) 
+        fee_loss_out = -(weight_change[weight_change<0].fillna(0) * (fee_rate_out * (1+ret_to_fric_adjust))).fillna(0)
+
+        # slippage is calculated at the moment when position is opened
+        slip_lose = np.abs(weight_change) * (slip_rate * (1+ret_to_fric_adjust))  
+        ret_after_fric = ret_weighted.fillna(0) - fr_loss.fillna(0) - fee_loss_in.fillna(0) - fee_loss_out.fillna(0) - slip_lose.fillna(0)
         return ret_after_fric
 
 
-    # performance
+    # ======================= performance =======================
     def get_perf_table(self, ret:pd.Series, annual_factor:float=252, is_compound:bool=True, name:str='None'):
         """
         Get Performance Table
@@ -249,7 +267,7 @@ class BackTester():
             df_ret:pd.DataFrame, 
             annual_factor:float = 252, 
             is_compound:bool = True,
-            need_perf_columns:list = ['CAGR(%)', 'Annual_Sharpe', 'MDD(%)', 'max_dd_period', 'profit_to_loss', 'Win_Rate(%)'], 
+            need_perf_columns:list = ['Total_Return(%)', 'CAGR(%)', 'Annual_Sharpe', 'Annual_Vol', 'MDD(%)', 'max_dd_period', 'profit_to_loss', 'Win_Rate(%)'], 
             is_show:bool = True, 
             is_return:bool = False,
         ):
@@ -326,5 +344,6 @@ class BackTester():
         print(tabulate(stats_df, headers='keys', tablefmt='psql')) if is_show else None
         if is_return:
             return stats_df
+
 
 
