@@ -348,6 +348,41 @@
             "datetime": "mdate"
         }
     },
+    "futures_institutional_investors":{
+        "datatable_code": "TWN/AFINST",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "symbol",
+                "mdate": "datetime",
+                "volume3": "多方交易口數",
+                "trad_val3": "多方交易契約金額",
+                "inst_pct3": "多方交易口數比重",
+                "volume5": "空方交易口數",
+                "trad_val5": "空方交易契約金額",
+                "inst_pct5": "空方交易口數比重",
+                "volume4": "多空交易口數淨額",
+                "trad_val4": "多空交易契約金額淨額",
+                "volume": "多方未平倉口數",
+                "trad_val": "多方未平倉契約金額",
+                "inst_pct": "多方未平倉口數持有比",
+                "volume2": "空方未平倉口數",
+                "trad_val2": "空方未平倉契約金額",
+                "inst_pct2": "空方未平倉口數持有比",
+                "volume1": "多空未平倉口數淨額",
+                "trad_val1": "多空未平倉契約淨額",
+                "name_c": "身份別名稱(中)",
+                "name_e": "身份別名稱(英)"
+            },
+            "datetime_type": ["datetime"],
+            "string_type": ["symbol", "身份別名稱(中)", "身份別名稱(英)"],
+            "sort": ["datetime", "symbol"],
+            "duplicate": []
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }
+    },
 
     "index_components":{
         "datatable_code": "TWN/AIDXS",

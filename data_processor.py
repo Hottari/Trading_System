@@ -1,8 +1,10 @@
 import numpy as np
 import pandas as pd
+import os, sys
 
 import pyarrow.parquet as pq
 import pyarrow.dataset as ds
+import pyarrow.compute as pc
 import pyarrow as pa
 import dask.dataframe as dd
 
@@ -20,7 +22,7 @@ class DataProcessor():
                 data[col] = pd.to_numeric(data[col], errors='coerce') 
         return data
     
-    # ========================== file type ========================== #
+    # ========================== get file data ========================== #
     def get_parquet_columns(self, data_path)->list:
         """
             Get parquet file columns
@@ -32,6 +34,27 @@ class DataProcessor():
             - list: parquet file columns
         """
         return pq.ParquetFile(source=data_path).schema.names
+    
+    def get_datetime_from_file(self, data_path:str, datetime_col:str='datetime', file_type:str="parquet", head_or_tail:str="tail")->pd.Timestamp:
+        """
+            Get datetime from parquet file
+            
+            Args:
+            - data_path (str): file path
+            - datetime_col (str): datetime column name
+            - format (str): file format, default parquet
+            - head_or_tail (str): head or tail of the file, default tail
+
+            Returns:
+            - pd.Timestamp: datetime
+        """
+        dataset = ds.dataset(source = data_path, format = file_type,)
+        if head_or_tail == "tail":
+            return pc.max(dataset.to_table(columns=[datetime_col])[datetime_col]).as_py()
+        elif head_or_tail == "head":
+            return pc.min(dataset.to_table(columns=[datetime_col])[datetime_col]).as_py()
+        else:
+            raise ValueError(f"head_or_tail should be head or tail, not {head_or_tail}")
 
     def get_parquet_data_with_dask(
             self,
@@ -151,35 +174,37 @@ class DataProcessor():
             - new_data (pd.DataFrame): new data
             - datetime_column (str): datetime column name
         """
-        # get new and non-overlapping table
         new_table = pa.Table.from_pandas(new_data, preserve_index=False)
-        existing_table = ds.dataset(data_path, format="parquet")
-        #datetime_sorted = new_data[datetime_column].sort_values()
-        start_date = new_data[datetime_column].min()
-        end_date = new_data[datetime_column].max()
-        non_overlapping_table = existing_table.to_table(
-            columns = None,
-            filter = ( ds.field(datetime_column) < pa.scalar(start_date)) | (ds.field(datetime_column) > pa.scalar(end_date))
-        )
-        new_table_schema = new_table.schema
-        non_overlapping_table_schema = non_overlapping_table.schema
+        # concat new and non-overlapping table
+        if os.path.exists(data_path):
+            existing_table = ds.dataset(data_path, format="parquet")
+            #datetime_sorted = new_data[datetime_column].sort_values()
+            start_date = new_data[datetime_column].min()
+            end_date = new_data[datetime_column].max()
+            non_overlapping_table = existing_table.to_table(
+                columns = None,
+                filter = ( ds.field(datetime_column) < pa.scalar(start_date)) | (ds.field(datetime_column) > pa.scalar(end_date))
+            )
+            new_table_schema = new_table.schema
+            non_overlapping_table_schema = non_overlapping_table.schema
 
-        # add missing columns
-        missing_in_new_table = set(non_overlapping_table_schema.names) - set(new_table_schema.names)
-        missing_in_non_overlapping_table = set(new_table_schema.names) - set(non_overlapping_table_schema.names)
-        new_table = self.add_missing_columns_to_paTable_with_none(new_table, missing_in_new_table, non_overlapping_table_schema)
-        non_overlapping_table = self.add_missing_columns_to_paTable_with_none(non_overlapping_table, missing_in_non_overlapping_table, new_table_schema)
-        
-        # schema order and type
-        # new_table = new_table.select(non_overlapping_table_schema.names)
-        new_schema = pa.schema([(field.name, field.type) for field in non_overlapping_table.schema])
-        new_schema_field_names = [field.name for field in new_schema]
-        ## make same order
-        new_table = new_table.select(new_schema_field_names)
-        ## make same type
-        new_table = new_table.cast(new_schema)
-
-        updated_table = pa.concat_tables([non_overlapping_table, new_table])
+            # add missing columns
+            missing_in_new_table = set(non_overlapping_table_schema.names) - set(new_table_schema.names)
+            missing_in_non_overlapping_table = set(new_table_schema.names) - set(non_overlapping_table_schema.names)
+            new_table = self.add_missing_columns_to_paTable_with_none(new_table, missing_in_new_table, non_overlapping_table_schema)
+            non_overlapping_table = self.add_missing_columns_to_paTable_with_none(non_overlapping_table, missing_in_non_overlapping_table, new_table_schema)
+            
+            # schema order and type
+            # new_table = new_table.select(non_overlapping_table_schema.names)
+            new_schema = pa.schema([(field.name, field.type) for field in non_overlapping_table.schema])
+            new_schema_field_names = [field.name for field in new_schema]
+            ## make same order
+            new_table = new_table.select(new_schema_field_names)
+            ## make same type
+            new_table = new_table.cast(new_schema)
+            updated_table = pa.concat_tables([non_overlapping_table, new_table])
+        else:
+            updated_table = new_table
         pq.write_table(updated_table, data_path, compression='snappy')
 
 
