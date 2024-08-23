@@ -24,6 +24,7 @@ def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_li=Non
     )
     save_dir_ohlcv = os.path.join(SAVE_ROOT, exchange, symbol_type, 'ohlcv', freq)
     save_dir_fr = os.path.join(SAVE_ROOT, exchange, symbol_type, 'funding_rate')
+    save_dir_open_interest = os.path.join(SAVE_ROOT, exchange, symbol_type, 'open_interest', freq)
     # tasks = [
     #     loader.do_fetch_update(save_dir=save_dir_ohlcv, item='ohlcv', symbol_li=symbol_li, freq=freq),
     #     loader.do_fetch_update(save_dir=save_dir_fr, item='funding_rate', symbol_li=symbol_li),
@@ -32,6 +33,7 @@ def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_li=Non
     # await asyncio.gather(*tasks)
     loader.do_fetch_update(save_dir=save_dir_ohlcv, item='ohlcv', symbol_li=symbol_li, freq=freq)
     loader.do_fetch_update(save_dir=save_dir_fr, item='funding_rate', symbol_li=symbol_li)
+    loader.do_fetch_update(save_dir=save_dir_open_interest, item='open_interest', symbol_li=symbol_li, freq=freq)
 
 params = {
     'exchange': 'binance',

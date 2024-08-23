@@ -68,16 +68,18 @@ class DataLoader(ExchangeData):
             url = end_point + self.get_suffix_kline()
             limit = self.get_limit_kline()
             columns = self.get_columns_kline()
-
         elif item == 'funding_rate': 
             url = end_point + self.get_suffix_funding_rate()
             limit = self.get_limit_funding_rate()
             columns = self.get_columns_funding_rate()
-
         elif item == 'long_short_ratio': 
             url = end_point + self.get_suffix_long_short_ratio()
             limit = self.get_limit_long_short_ratio()
             columns = self.get_columns_long_short_ratio()
+        elif item == 'open_interest':
+            url = end_point + self.get_suffix_open_interest()
+            limit = self.get_limit_open_interest()
+            columns = self.get_columns_open_interest()
         else:
             raise ValueError(f"Unsupported item: {item}")
 
@@ -107,6 +109,8 @@ class DataLoader(ExchangeData):
                 return handler_instance.fetch_funding_rate
             elif item == 'long_short_ratio': 
                 return handler_instance.fetch_long_short_ratio
+            elif item == 'open_interest': 
+                return handler_instance.fetch_open_interest
             else:
                 raise ValueError(f"Unsupported item: {item}")
         else:
@@ -124,8 +128,8 @@ class DataLoader(ExchangeData):
 
         start_ts13 = self.start_ts13
         end_ts13 = self.end_ts13
-        if item in ['long_short_ratio']:
-            # long_short_ratio limit: 30 days
+        if item in ['long_short_ratio', 'open_interest']:
+            # 30 days limit
             start_ts13 = max(end_ts13-30*24*60*60*1000, start_ts13) if end_ts13 else max(int(time.time()*1000)-30*24*60*60*1000, start_ts13)
         fetch_args = self.get_fetch_args(item)
         fetch_args.update(

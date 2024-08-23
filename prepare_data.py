@@ -39,8 +39,12 @@ class ExchangeData():
     def get_suffix_funding_rate(self):
         return self.exchange_config[self.symbol_type]["suffix"]["funding_rate"]
 
+    def get_suffix_open_interest(self):
+        return self.exchange_config[self.symbol_type]["suffix"]["open_interest"]
+
     def get_suffix_long_short_ratio(self):
         return self.exchange_config[self.symbol_type]["suffix"][self.long_short_ratio_type]
+    
 
     # ==================== limit ==================== #
     def get_limit_kline(self):
@@ -49,8 +53,12 @@ class ExchangeData():
     def get_limit_funding_rate(self):
         return self.exchange_config[self.symbol_type]["limit"]["funding_rate"]    
 
+    def get_limit_open_interest(self):
+        return self.exchange_config[self.symbol_type]["limit"]["open_interest"]
+
     def get_limit_long_short_ratio(self):
         return self.exchange_config[self.symbol_type]["limit"][self.long_short_ratio_type] 
+    
 
     # ==================== response columns ==================== #
     def get_columns_kline(self):
@@ -58,6 +66,9 @@ class ExchangeData():
 
     def get_columns_funding_rate(self):
         return self.exchange_config[self.symbol_type]["columns"]["funding_rate"]
+    
+    def get_columns_open_interest(self):
+        return self.exchange_config[self.symbol_type]["columns"]["open_interest"]
 
     def get_columns_long_short_ratio(self):
         return self.exchange_config[self.symbol_type]["columns"][self.long_short_ratio_type]

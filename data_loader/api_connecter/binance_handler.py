@@ -1,12 +1,13 @@
 import pandas as pd
 import numpy as np
 import os, sys
-import aiohttp
-import requests
+import aiohttp, requests
+from datetime import datetime
 
 from binance.um_futures import UMFutures
 from binance.error import ClientError
-from datetime import datetime
+umf = UMFutures()
+
 
 PROJECT_ROOT = '..'
 sys.path.extend([PROJECT_ROOT, '../..']) 
@@ -37,11 +38,11 @@ class BinanceHandler():
             limit = 1000, recvWindow = 1000000,             # https://binance-docs.github.io/apidocs/futures/en/#signed-trade-and-user_data-endpoint-security
             )->list:
         all_trades = []
+        client = UMFutures(
+            key = api_key,
+            secret = api_secret,
+        )
         while start_ts13 < end_ts13:
-            client = UMFutures(
-                key = api_key,
-                secret = api_secret,
-            )
             try:
                 response = client.get_account_trades(
                     limit = limit, recvWindow = recvWindow,
@@ -53,7 +54,6 @@ class BinanceHandler():
                 print(f"Error status:{error.status_code}, code:{error.error_code}, message:{error.error_message}")
             start_ts13 = min(start_ts13+interval_limit, end_ts13) + 1
         return all_trades
-
 
 
     # async def fetch_ohlcv(
@@ -96,6 +96,43 @@ class BinanceHandler():
                     break
                 last = -1    
                 start_ts13 = int(data[last][0]) + 1
+        df = self.form_dataframe(columns=columns, need_col=need_col, data_li=data_li)
+        return df
+
+
+    def fetch_open_interest(
+            self,
+            symbol, freq, limit, columns,
+            start_ts13,
+            end_ts13 = None, 
+            need_col = ["datetime", "open_interest", "open_interest_value"],
+            **kwargs
+        ):
+
+        """
+        Mind
+        - timezone = 'UTC'
+        - see https://binance-docs.github.io/apidocs/futures/en/#open-interest-statistics
+        """
+        item = 'open_interest'
+        data_li = []
+        params = {
+            'symbol': symbol, 
+            'period': freq, 
+            'limit':limit,
+            'endTime': end_ts13,
+        }
+        params = {k: v for k, v in params.items() if v is not None}     # none in params will make sesstion.get() error
+        while True:
+            message.fetching(item, symbol, start_time=pd.to_datetime(start_ts13, unit='ms').tz_localize('UTC'))
+            params['startTime'] = start_ts13                        # update start_time
+            data = umf.open_interest_hist(**params)
+            data_li.extend(data) 
+            if len(data) < limit:
+                break
+            last = -1    
+            # mind while loop of start_ts13 should be different in different items
+            start_ts13 = int(data[last]['timestamp']) + 1
         df = self.form_dataframe(columns=columns, need_col=need_col, data_li=data_li)
         return df
 
@@ -182,4 +219,4 @@ class BinanceHandler():
                 start_ts13 = int(data[last]['timestamp']) + 1
         df = self.form_dataframe(columns=columns, need_col=need_col, data_li=data_li)
         return df
-
+    
