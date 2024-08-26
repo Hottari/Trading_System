@@ -32,7 +32,9 @@ def update_data(exchange, symbol_type, timezone, start, end, freq, symbol_li=Non
     # # Run tasks concurrently
     # await asyncio.gather(*tasks)
     loader.do_fetch_update(save_dir=save_dir_ohlcv, item='ohlcv', symbol_li=symbol_li, freq=freq)
+    time.sleep(10) 
     loader.do_fetch_update(save_dir=save_dir_fr, item='funding_rate', symbol_li=symbol_li)
+    time.sleep(10)
     loader.do_fetch_update(save_dir=save_dir_open_interest, item='open_interest', symbol_li=symbol_li, freq=freq)
 
 params = {
