@@ -38,7 +38,7 @@ class PerfPlot():
             plot_distribution(data, 'Volume', bins=100)
         """
         # Convert data to DataFrame
-        df = pd.DataFrame(data, columns=[data_name])
+        df = pd.Series(data, name=data_name)
 
         # Plot using iplot
         fig = df.iplot(kind='hist', bins=bins, histnorm='probability density', title=f'Distribution {data_name}', 
