@@ -127,7 +127,7 @@ class BackTester():
     def get_return_after_friction_cost(self, 
             rets, weights, 
             fr=0, 
-            fee_rate_in=0.001425*0.3, fee_rate_out=0.001425*0.3+0.003, slip_rate=0, 
+            fee_rate_in=0.001425*0.5, fee_rate_out=0.001425*0.5+0.003, slip_rate=0, 
             signal_delay_periods=1,
             return_delay_periods=1,
         ):
