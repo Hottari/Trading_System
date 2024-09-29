@@ -114,7 +114,7 @@ class PerfPlot():
         df, data_name, 
         title=None, is_ret=True, 
         is_save=False, separate_date=None,
-        height = 600, width = 1000,
+        height = 500, width = 1000,
     ):
         if is_ret:
             df['drawdown'] = (df[data_name]+1) / (np.maximum(0, df[data_name].cummax())+1) - 1
@@ -138,7 +138,7 @@ class PerfPlot():
             )          
         # Update layout
         fig.update_layout(
-            height = 600, width = 1000, 
+            height = height, width = width, 
             title_text = title,
             title_font = dict(size = 18)
         )
