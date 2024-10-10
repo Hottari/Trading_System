@@ -63,7 +63,7 @@ class TEJHandler(ExchangeData, DataProcessor):
             'datatable_code': self.datatable_code,
             'coid': symbols,
             self.params_name['datetime']: {
-                'gte': start_date,#datetime.today()-pd.DateOffset(days=15) if start_date is None else start_date,
+                'gte': start_date,
                 'lte': end_date,
             },
             'opts': {'columns': list(self.columns_rename_dict.keys())},
