@@ -199,19 +199,19 @@ class BackTester():
         mdd = np.abs(ts_dd.min())
 
         ret_diff = ret_cum.diff().fillna(0)
-        profit_ts = ret_diff[ret_diff>0]
-        loss_ts = ret_diff[ret_diff<0]
 
+        is_win = (ret_diff>0)
+        is_lose = (ret_diff<0)
+        win_times = is_win.sum()
+        lose_times = is_lose.sum()
+        profit_ts = ret_diff[is_win]
+        loss_ts = ret_diff[is_lose]
         try:
             profit = profit_ts.cumsum().values[-1]
             loss = loss_ts.cumsum().values[-1]
 
         except:
             profit, loss = 0, 1
-
-        win_times = profit_ts.shape[0]
-        lose_times = loss_ts.shape[0]
-
         annual_sharpe = ret_ts.mean() / ret_ts.std() * np.sqrt(annual_factor)
         annual_vol =  ret_ts.std() * np.sqrt(annual_factor)
 
