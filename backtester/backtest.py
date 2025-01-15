@@ -303,7 +303,7 @@ class BackTester():
             year:int=1, start_year:int=2020, end_year:int=2024, 
             annual_factor:float = 252, 
             is_compound:bool = True,
-            need_perf_columns:list = ['CAGR(%)', 'Annual_Sharpe', 'MDD(%)', 'max_dd_period', 'profit_to_loss', 'Win_Rate(%)'], 
+            need_perf_columns:list = ['Total_Return(%)', 'CAGR(%)', 'Annual_Sharpe', 'Annual_Vol', 'MDD(%)', 'max_dd_period', 'profit_to_loss', 'Win_Rate(%)',], 
             is_show:bool = True, 
             is_return:bool = False,
         ):
