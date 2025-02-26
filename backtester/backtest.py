@@ -292,7 +292,7 @@ class BackTester():
                 annual_factor = annual_factor,
                 is_compound = is_compound,
             )
-        for col in df_ret.columns], axis=0).set_index('name')[need_perf_columns].round(3)
+        for col in df_ret.columns], axis=0).set_index('name')[need_perf_columns].round(2)
         print(tabulate(stats_df, headers='keys', tablefmt='psql')) if is_show else None
         if is_return:
             return stats_df

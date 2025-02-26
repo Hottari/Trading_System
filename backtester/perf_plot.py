@@ -25,7 +25,7 @@ class PerfPlot():
         pass
 
     # ================== Data Attributes ==================
-    def plot_distribution_plotly(self, data: np.ndarray, data_name:str = '', bins:int=20, width=1000, height=500):
+    def plot_distribution_plotly(self, data: np.ndarray, data_name:str = '', bins:int=20, width=900, height=400):
         """
         Plot data distribution using Plotly's iplot method.
 
@@ -39,15 +39,19 @@ class PerfPlot():
         """
         # Convert data to DataFrame
         df = pd.Series(data, name=data_name)
-
-        # Plot using iplot
         fig = df.iplot(kind='hist', bins=bins, histnorm='probability density', title=f'Distribution {data_name}', 
                 xTitle=data_name, yTitle='Density', colors='skyblue', asFigure=True)
-        
+        fig.update_traces(
+            marker=dict(
+                color = 'rgba(75, 192, 192, 0.6)',      # Fill color
+                line=dict(
+                    color = 'rgba(0, 0, 0, 1)',         # Border color
+                    width=1,
+                )
+            )
+        )
         fig.update_layout(width=width, height=height, bargap=0.1)
         fig.show()
-
-
 
     def plot_distribution(self, data:np.ndarray, data_name:str='', bins:int=100):
         """
