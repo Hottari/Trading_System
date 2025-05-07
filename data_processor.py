@@ -22,6 +22,28 @@ class DataProcessor():
                 data[col] = pd.to_numeric(data[col], errors='coerce') 
         return data
     
+    def add_settle_date(self, df):
+        """
+        Add settle_date and last_settle_date to the dataframe
+
+        Mind: 周選無法這樣處理
+        """
+        df['settle_date'] = df['symbol'].map(df.groupby(['symbol'])['datetime'].max())
+        df['settle_date'] = df['settle_date'].where(df['settle_date']!=df['datetime'].max(), df['datetime'].max()+pd.Timedelta(days=1))
+
+        df['last_settle_date'] = df['symbol'].map(df.groupby(['symbol'])['datetime'].max().shift(1))
+
+        if 'expiry_month' in df.columns:
+            df['settle_date'] = (
+                df['settle_date']
+                .where(df['settle_date'].dt.strftime('%Y%m')==df['expiry_month'].dt.strftime('%Y%m'), df['expiry_month'])
+            )
+        else: 
+            df['settle_date'] = (
+                df['settle_date']
+                .where(df['settle_date'].dt.strftime('%Y%m')==df['symbol'].str[-6:], pd.to_datetime(df['symbol'].str[-6:], format='%Y%m'))
+            )
+    
     # ========================== get file data ========================== #
     def get_parquet_columns(self, data_path)->list:
         """
@@ -206,6 +228,29 @@ class DataProcessor():
         else:
             updated_table = new_table
         pq.write_table(updated_table, data_path, compression='snappy')
+
+    def concat_table_to_paTable(self, base_table, new_table):
+        # once a table is created, its data cannot be changed
+        new_table_schema = new_table.schema
+        base_table_schema = base_table.schema
+
+        # add missing columns
+        missing_in_new_table = set(base_table_schema.names) - set(new_table_schema.names)
+        missing_in_base_table_table = set(new_table_schema.names) - set(base_table_schema.names)
+        new_table = self.add_missing_columns_to_paTable_with_none(new_table, missing_in_new_table, base_table_schema)
+        base_table = self.add_missing_columns_to_paTable_with_none(base_table, missing_in_base_table_table, new_table_schema)
+
+        # schema order and type
+        # new_table = new_table.select(non_overlapping_table_schema.names)
+        new_schema = pa.schema([(field.name, field.type) for field in base_table.schema])
+        new_schema_field_names = [field.name for field in new_schema]
+        ## make same order
+        new_table = new_table.select(new_schema_field_names)
+        ## make same type
+        new_table = new_table.cast(new_schema)
+
+        updated_table = pa.concat_tables([base_table, new_table])
+        return updated_table
 
 
     # ========================== index ========================== #

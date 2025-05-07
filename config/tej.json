@@ -383,6 +383,35 @@
             "datetime": "mdate"
         }
     },
+    "futures_after_hours":{
+        "datatable_code": "TWN/AFUT_T1",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "symbol",
+                "mdate": "datetime",
+                "open_d": "開盤價",
+                "high_d": "最高價",
+                "low_d": "最低價",
+                "close_d": "收盤價",
+                "settle": "前日結算價",
+                "chg_pct": "報酬率",
+                "volume": "成交量",
+                "tvolume": "日夜成交量",
+                "bid": "最後最佳買價",
+                "offer": "最後最佳賣價",
+                "h_bid": "最高買價",
+                "h_offer": "最低賣價"
+            },
+            "datetime_type": ["datetime"],
+            "string_type": ["symbol"],
+            "sort": ["datetime", "symbol"],
+            "duplicate": []
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }
+    },
 
     "index_components":{
         "datatable_code": "TWN/AIDXS",
