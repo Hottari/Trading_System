@@ -252,7 +252,6 @@ class DataProcessor():
         updated_table = pa.concat_tables([base_table, new_table])
         return updated_table
 
-
     # ========================== index ========================== #
     def add_time(self, df, datetime_name='datetime'):
         df['year'] = df[datetime_name].dt.year
