@@ -195,8 +195,66 @@ class PerfPlot():
         plt.show()
 
 
+    def plot_monthly_ret_heatmap_plotly(
+            self, 
+            ret_ts,
+            title = 'Monthly Returns Heatmap',
+            width = 700,
+            height = 700,
+        ):
+        """
+        Plot a heatmap of monthly returns using Plotly.
+        
+        Args:
+            df_monthly_return (pd.DataFrame): DataFrame containing with month index and year columns.
+            title (str): Title of the heatmap.
+            width (int): Width of the heatmap.
+            height (int): Height of the heatmap.
 
-    def plot_monthly_ret(self, monthly_return_df):
+        """
+        colorscale = [
+            [0, 'rgb(165,0,38)'],      # Dark red for most negative values
+            [0.25, 'rgb(215,48,39)'],  # Less dark red for less negative values
+            [0.45, 'rgb(244,109,67)'], # Light red for small negative values
+            [0.5, 'rgb(255,255,255)'], # White for zero
+            [0.55, 'rgb(161,217,155)'],# Light green for small positive values
+            [0.75, 'rgb(49,163,84)'],  # Less dark green for less positive values
+            [1, 'rgb(0,104,55)']       # Dark green for most positive values
+        ]
+
+        df_monthly_return = pd.DataFrame({'ret': ret_ts.add(1).resample('ME').prod().sub(1).copy()})
+        df_monthly_return['year'] = df_monthly_return.index.year
+        df_monthly_return['month'] = df_monthly_return.index.month
+        df_monthly_return = df_monthly_return.set_index(['month', 'year'])['ret'].unstack()
+        df_monthly_return.index = df_monthly_return.index.astype(str)
+        df_monthly_return = df_monthly_return.mul(100)
+
+        fig = go.Figure(data=go.Heatmap(
+            z=df_monthly_return.values,
+            x=df_monthly_return.columns,
+            y=df_monthly_return.index,
+            colorscale=colorscale,
+            zmid = 0,  # Center the color scale at zero
+            text=[[f"{val:.2f}%" for val in row] for row in df_monthly_return.values],
+            hovertemplate='yyyy.m: %{x}.%{y}<br>Return: %{text}<extra></extra>',
+            # colorbar=dict(title='Return'),
+            xgap=1,  # Add gap between cells on x-axis (creates border effect)
+            ygap=1   # Add gap between cells on y-axis (creates border effect)
+            
+        ))
+        fig.update_layout(
+            title = title,
+            xaxis_title='Year',
+            yaxis_title='Month',
+            yaxis_autorange='reversed',  # Most recent Month at the top
+            width = width,
+            height = height,
+            margin = dict(l=50, r=50, b=50, t=80),
+            plot_bgcolor='white',
+        )
+        fig.show()  
+
+    def plot_monthly_ret_heatmap(self, monthly_return_df):
         df = monthly_return_df
         # Extract years and months
         df['Year'] = df['Date'].dt.year
