@@ -29,7 +29,7 @@ class DataProcessor():
         Mind: 周選無法這樣處理
         """
         df['settle_date'] = df['symbol'].map(df.groupby(['symbol'])['datetime'].max())
-        df['settle_date'] = df['settle_date'].where(df['settle_date']!=df['datetime'].max(), df['datetime'].max()+pd.Timedelta(days=1))
+        # df['settle_date'] = df['settle_date'].where(df['settle_date']!=df['datetime'].max(), df['datetime'].max()+pd.Timedelta(days=1))
 
         df['last_settle_date'] = df['symbol'].map(df.groupby(['symbol'])['datetime'].max().shift(1))
 
