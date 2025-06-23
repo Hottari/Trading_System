@@ -267,7 +267,7 @@ class BackTester():
             df_ret:pd.DataFrame, 
             annual_factor:float = 252, 
             is_compound:bool = True,
-            need_perf_columns:list = ['Total_Return(%)', 'CAGR(%)', 'Annual_Sharpe', 'Annual_Vol', 'MDD(%)', 'max_dd_period', 'profit_to_loss', 'Win_Rate(%)'], 
+            need_perf_columns:list = ['Total_Return(%)', 'CAGR(%)', 'Annual_Sharpe', 'Adjusted_Annual_Sharpe', 'Annual_Vol', 'MDD(%)', 'max_dd_period', 'profit_to_loss', 'Win_Rate(%)'], 
             is_show:bool = True, 
             is_return:bool = False,
         ):
@@ -292,7 +292,20 @@ class BackTester():
                 annual_factor = annual_factor,
                 is_compound = is_compound,
             )
-        for col in df_ret.columns], axis=0).set_index('name')[need_perf_columns].round(2)
+        for col in df_ret.columns], axis=0).set_index('name')
+
+        # Adjusted_Annual_Sharpe
+        # annual_sharpe = ret_ts.mean() / ret_ts.std() * np.sqrt(annual_factor)
+        # annual_vol =  ret_ts.std() * np.sqrt(annual_factor)
+        rets_mean = stats_df['Annual_Sharpe'].mul(stats_df['Annual_Vol']).div(annual_factor)    # annual_factor = np.sqrt(annual_factor) **2
+        min_rets_mean = rets_mean.min()
+        if min_rets_mean < 0:
+            rets_mean_adjusted = rets_mean.sub(rets_mean.min())
+            stats_df['Adjusted_Annual_Sharpe'] = rets_mean_adjusted.div(stats_df['Annual_Vol']).mul(annual_factor)
+        else:
+            stats_df['Adjusted_Annual_Sharpe'] = stats_df['Annual_Sharpe']
+        
+        stats_df = stats_df[need_perf_columns].round(2)
         print(tabulate(stats_df, headers='keys', tablefmt='psql')) if is_show else None
         if is_return:
             return stats_df
