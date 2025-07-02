@@ -1,6 +1,6 @@
 import numpy as np
 import statsmodels.api as sm
-from scipy import stats, ttest_1samp
+from scipy import stats
 from tqdm import tqdm
 
 class StatisticTest:
@@ -75,7 +75,7 @@ class StatisticTest:
             return results
 
 
-    def get_one_sided_positive_return_t_test(self, data, is_return=False):
+    def get_positive_return_t_test(self, data, is_return=False):
         """
         Perform a one-sample t-test to check if the mean return is significantly positive. Assumes data is normally distributed.
         
@@ -89,21 +89,21 @@ class StatisticTest:
         """
         
         # Perform the t-test for mean = 0
-        t_stat, p_value = stats.ttest_1samp(data, 0)
+        t_stat, p_value = stats.ttest_1samp(data, 0)   # , alternative='greater')
         
         # One-sided p-value (greater than 0)
-        p_value_one_sided = p_value / 2 if t_stat > 0 else 1 - p_value / 2
-        print(f"T-statistic: {t_stat:.3f}, One-sided p-value: {p_value_one_sided:.3f}")
+        # p_value_one_sided = p_value / 2 if t_stat > 0 else 1 - p_value / 2
+        print(f"T-statistic: {t_stat:.3f}, p-value(2-sided): {p_value:.3f}")
 
         if is_return:
             results = {
                 't_stat': t_stat,
-                'p_value_one_sided': p_value_one_sided
+                'p_value': p_value
             }
             return results
 
 
-    def get_fama_macbeth_test_result(rets_data, signals_data, is_return=False):
+    def get_fama_macbeth_test_result(self, rets_data, signals_data, is_return=False):
         """
         Perform Fama-MacBeth regression to test if the selected stocks outperform others.
 
@@ -133,20 +133,27 @@ class StatisticTest:
             betas.append(model.params[1])  # coefficient on your binary signal
 
         # Test if mean(beta) > 0 (i.e., selected stocks outperform others)
-        t_stat, p_val = ttest_1samp(betas, 0) # , alternative='greater')
-
         print('\nFama MacBeth Regression Results')
         print('----------------------------------------------------')
         print(f"Mean Return Difference (Selected - Others): {np.mean(betas):>7.5f}")
-        print(f"{'Perids: ':<20}{signals_data.shape[0]:>7.0f}")
-        print(f"{'p-value (2-sided): ':<20}{p_val:>7.3f}")
-        print(f"{'t-statistic: ':<20}{t_stat:>7.3f}")
+        print(f"{'Perids: '}{signals_data.shape[0]:.0f}")
+
+        print('----------------------------------------------------')
+        print('T-test for Mean beta')
+        ttest_results = self.get_positive_return_t_test(data=betas, is_return=True)  # Assumes data is normally distributed
+
+        print('----------------------------------------------------')
+        print("\nBootstrap Confidence Interval for Mean beta")
+        bootstrap_results = self.get_bootstrap_positive_return_test_ci(data=betas, is_return=True)
 
         if is_return:
             results = {
                 'mean_return_difference': np.mean(betas),
                 'periods': signals_data.shape[0],
-                'p_value': p_val,
-                't_statistic': t_stat
+                'p_value': ttest_results['p_value'],
+                't_statistic': ttest_results['t_stat'],
+                'ci_lower': bootstrap_results['ci_lower'],
+                'ci_upper': bootstrap_results['ci_upper'],
+                'significance': bootstrap_results['ci_lower'] > 0
             }
             return results
