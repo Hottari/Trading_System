@@ -59,7 +59,7 @@ class StatisticTest:
         bootstrap_means = np.random.choice(data, size=(n_bootstrap, len(data)), replace=True).mean(axis=1)
         ci_lower = np.percentile(bootstrap_means, 100 * (alpha / 2))
         ci_upper = np.percentile(bootstrap_means, 100 * (1 - alpha / 2))
-        print(f"Bootstrap 95% CI for mean strategy return: [{ci_lower:.6f}, {ci_upper:.6f}]")
+        print(f"Bootstrap {1-alpha:.0%} CI for mean strategy return: [{ci_lower:.6f}, {ci_upper:.6f}]")
 
         if ci_lower > 0:
             print("The strategy's mean return is significantly positive based on the CI.")
