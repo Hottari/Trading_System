@@ -9,9 +9,6 @@ import plotly.express as px
 import plotly.offline as pyo
 from itertools import cycle
 
-
-import matplotlib.pyplot as plt
-import plotly.graph_objects as go
 import cufflinks as cf
 cf.go_offline()
 
@@ -288,6 +285,20 @@ class PerfPlot():
 
     # ================== Real Trading Tracker ==================
     def plot_track_result_plotly(self, lev, df_bal_real, portfolio_name, ret_bt, start, end, timeframe='8h'):
+        """
+        Plot the tracking result of real trading against backtest results.
+
+        Args:
+            lev (float): Leverage factor.
+            df_bal_real (pd.DataFrame): DataFrame containing real trading balance.
+            portfolio_name (str): Name of the portfolio.
+            ret_bt (pd.Series): Backtest returns.
+            start (str): Start date for the analysis.
+            end (str): End date for the analysis.
+            timeframe (str): Resampling timeframe.
+
+        """
+
         df_ret = pd.DataFrame({'backtest':ret_bt[start:end]})
         df_ret['real'] = ((df_bal_real[df_bal_real['portfolio'] == portfolio_name]['return'][start:]+1).resample(timeframe).prod()-1).shift(1)
         df_ret = df_ret.iloc[1:]
@@ -317,7 +328,16 @@ class PerfPlot():
         fig.show()
 
     
-    def plot_river_chart(self, df_data, figure_width=1200, figure_height=600):
+    def plot_river_chart(self, df_data, custom_title="River Chart of Asset Weighting Over Time", width=1200, height=600):
+        """
+        Plot a river chart (stacked area chart) to visualize asset weighting over time.
+
+        Args:
+            df_data (pd.DataFrame): DataFrame containing asset weights with datetime index.
+            custom_title (str): Title of the chart.
+            figure_width (int): Width of the figure.
+            figure_height (int): Height of the figure.
+        """
         df = df_data.copy()
         # Select a Plotly Express built-in color sequence
         color_palette = px.colors.qualitative.Set1  # Example color palette
@@ -329,31 +349,45 @@ class PerfPlot():
             fig.add_trace(go.Scatter(
                 x=df.index,
                 y=df[item],
-                hoverinfo='x+y',
                 mode='lines',
                 line=dict(width=0.5, color=next(color_cycle)),  # Get the next color from the cycle
                 stackgroup='one',     # Creates the stacking effect
                 groupnorm='percent',  # Normalize to percentage for full area coverage
-                name=item
+                name=item,
+                hovertemplate=(
+                    '<b>%{fullData.name}</b><br>' +
+                    'Date: %{x}<br>' +
+                    'Weight: %{y:.2f}%<br>' +
+                    '<extra></extra>'
+                )
             ))
         # Update the layout with axis labels, title settings, and figure dimensions
         fig.update_layout(
             showlegend=True,
+            legend=dict(
+                orientation="h",  # Horizontal orientation
+                yanchor="bottom",
+                y=1.02,  # Position above the plot area
+                xanchor="center",
+                x=0.5  # Center horizontally
+            ),
+            margin=dict(b=50, t=120),  # l, r, t, b
             yaxis=dict(
                 title='Asset Weight',  # Y-axis label
                 type='linear',
                 range=[1, 100],
-                ticksuffix='%'
+                ticksuffix='%',
             ),
             title=dict(
-                text="River Chart of Asset Weighting Over Time",
+                text=custom_title,
+                y = 0.95,
                 x = 0.5,  # Center the title
                 xanchor = 'center',  # Use the middle of the title for centering
                 font=dict(  # Customize font settings
                     size=24  # Bigger font size for the title
                 )
             ),
-            width = figure_width,
-            height = figure_height
+            width = width,
+            height = height,
         )
         fig.show()
