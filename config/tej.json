@@ -434,5 +434,218 @@
         "params_name":{
             "datetime": "mdate"
         }
+    },
+    
+    "etf_property":{
+        "datatable_code": "TWN/AESTD",
+        "end_point": "",
+        "columns": {
+            
+        },
+        "params_name":{
+        }
+    },
+    "etf_daily_holdings":{
+        "datatable_code": "TWN/AEHOLD",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "symbol",
+                "mdate": "datetime",
+                "key3": "標的類型",
+                "no": "標的名稱",
+                "vol": "股數",
+                "curr": "幣別",
+                "amt": "金額(千元)",
+                "exp": "期貨契約年月",
+                "pct": "權重(%)",
+                "upd_key": "資料更新日"
+            },
+            "datetime_type": ["datetime", "期貨契約年月", "資料更新日"],
+            "string_type": ["symbol", "標的類型", "標的名稱", "幣別"],
+            "sort": ["datetime", "symbol"],
+            "duplicate": []
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }
+    },
+    "etf_weekly_holdings":{
+        "datatable_code": "TWN/AEWW",
+        "end_point": "",
+        "columns": {
+        },
+        "params_name":{
+        }
+    },
+    "etf_monthly_holdings":{
+        "datatable_code": "TWN/AEMM",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "symbol",
+                "mdate": "datetime",
+                "key3": "投資證券代碼",
+                "fld004": "股數",
+                "fld005": "比率％",
+                "inv_amt": "金額(千元)",
+                "fld006": "持股數/流通在外股數%",
+                "fld007": "個股月報酬率％"
+            },
+            "datetime_type": ["datetime"],
+            "string_type": ["symbol", "投資證券代碼"],
+            "sort": ["datetime", "symbol"],
+            "duplicate": []
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }
+    },
+    "etf_price":{
+        "datatable_code": "TWN/AEPRCD",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "symbol",
+                "mdate": "datetime",
+                "currency": "幣別",
+                "close_d": "市價",
+                "fld004": "淨值",
+                "fld006": "折溢價",
+                "fld007": "折溢價率%",
+                "amt": "成交值(千元)",
+                "vol": "成交量(千股)",
+                "turnover": "周轉率(%)",
+                "tej_cdiv_yid": "現金股利率%",
+                "share1": "受益權單位數(千股)",
+                "fld003": "淨資產(百萬元)",
+                "mv": "市值(百萬元)",
+                "bid": "最後揭示買價",
+                "offer": "最後揭示賣價",
+                "trn_d": "成交筆數",
+                
+                "roia": "日報酬率%",
+                "roi_w": "近一週報酬率(%)",
+                "roi_m": "近一月報酬率%",
+                "roi_q": "近一季報酬率%",
+                "roi_y": "近一年報酬率%",
+                "roi_wb": "本週以來報酬率%",
+                "roi_mb": "本月以來報酬率%",
+                "roi_qb": "本季以來報酬率%",
+                "roi_yb": "本年以來報酬率%"
+            },
+            "datetime_type": ["datetime"],
+            "string_type": ["symbol", "幣別"],
+            "sort": ["datetime", "symbol"],
+            "duplicate": []
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }
+    },
+    "etf_dividend":{
+        "datatable_code": "TWN/ACANE",
+        "end_point": "",
+        "columns": {
+        },
+        "params_name":{
+        }
+    },
+    "etf_institutional_investors":{
+        "datatable_code": "TWN/AETINST1",
+        "end_point": "",
+        "columns": {
+            "fetch":{
+                "coid": "symbol",
+                "mdate": "datetime",
+
+                "qfii_ex1": "外資買賣超(千股)",
+                "qfii_p": "外資買賣超市值(百萬)",
+                "ttl_stk": "外資總持股數(千股)",
+                "qfiimv": "外資總持股市值(百萬)",
+
+                "fund_ex": "投信買賣超(千股)",
+                "fund_p": "投信買賣超市值(百萬)",
+                "fld008": "投信總持股數(千股)",
+                "fundmv": "投信總持股市值(百萬)",
+
+                "dlr_ex": "自營買賣超(千股)",
+                "dlr_p": "自營買賣超市值(百萬)",
+                "fld011": "自營總持股數(千股)",
+                "dlrmv": "自營總持股市值(百萬)",
+                "dlrp_ex": "自營自行買賣超(千股)",
+                "dlrp_p": "自營自行買賣超市值(百萬)",
+                "dlrh_ex": "自營避險買賣超(千股)",
+                "dlrh_p": "自營避險買賣超市值(百萬)",
+
+                "ttl_ex": "合計買賣超(千股)",
+                "ttl_p": "合計買賣超市值(百萬)",
+                "fld014": "合計總持股數(千股)",
+                "ttlmv": "合計總持股市值(百萬)",
+
+                "qfii_buy": "外資買進張數",
+                "qfii_sell": "外資賣出張數",
+                "fd_buy": "投信買進張數",
+                "fd_sell": "投信賣出張數",
+                "dlr_buy": "自營買進張數",
+                "dlr_sell": "自營賣出張數",
+                "dlrp_buy": "自營自行買進張數",
+                "dlrp_sell": "自營自行賣出張數",
+                "dlrh_buy": "自營避險買進張數",
+                "dlrh_sell": "自營避險賣出張數",
+
+                "t_pct": "外資總持股率(%)",
+                "fld022": "投信總持股率(%)",
+                "fld023": "自營總持股率(%)",
+                "fld024": "合計總持股率(%)",
+
+                "fld025": "外資周轉率(%)",
+                "fld026": "投信周轉率(%)",
+                "fld027": "自營周轉率(%)",
+
+                "qfii_sno": "流通在外股數(千股)"
+
+            },
+            "datetime_type": ["datetime"],
+            "string_type": ["symbol"],
+            "sort": ["datetime", "symbol"],
+            "duplicate": []
+        },
+        "params_name":{
+            "datetime": "mdate"
+        }
+    },
+    "etf_margin_trading":{
+        "datatable_code": "TWN/AEGIN",
+        "end_point": "",
+        "columns": {
+        },
+        "params_name":{
+        }
+    },
+    "etf_turnover":{
+        "datatable_code": "TWN/AETRN",
+        "end_point": "",
+        "columns": {
+        },
+        "params_name":{
+        }
+    },
+    "etf_book_value":{
+        "datatable_code": "TWN/AENAVA",
+        "end_point": "",
+        "columns": {
+        },
+        "params_name":{
+        }
+    },
+    "etf_redemption":{
+        "datatable_code": "TWN/AEPCF",
+        "end_point": "",
+        "columns": {
+        },
+        "params_name":{
+        }
     }
+
 }
